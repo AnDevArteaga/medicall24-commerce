@@ -39,7 +39,7 @@ const TestimonialsPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-3 py-12 sm:py-2 space-y-8">
         {/* Sección de Video Testimonios */}
         <section className="bg-white rounded-lg shadow-xl overflow-hidden">
-          <div className="p-8 sm:p-2">
+          <div className="p-1 sm:p-2">
             <h2 className="flex items-center justify-center sm:justify-start text-5xl sm:text-4xl font-bold text-gray-700 mb-4">
               <Video className="w-10 h-10 text-yellow-400 mr-3" />
               Testimonios
@@ -61,7 +61,7 @@ const TestimonialsPage: React.FC = () => {
 
         {/* Sección de Comentarios */}
         <section className="bg-white rounded-lg shadow-xl overflow-hidden">
-          <div className="p-8 sm:p-2">
+          <div className="p-4 sm:p-2">
             <h2 className="flex items-center text-xl sm:text-4xl font-bold text-gray-700 mb-4">
               <MessageCircle className="w-8 h-8 text-green-500 mr-3 flex-shrink-0" />
               Recomendaciones y sugerencias de Clientes

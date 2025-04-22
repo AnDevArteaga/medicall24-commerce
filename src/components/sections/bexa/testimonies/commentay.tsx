@@ -8,15 +8,14 @@ interface CommentaryItem {
 }
 
 interface ComentarySliderProps {
-    data: Record<string, CommentaryItem>;
+    data: CommentaryItem[];
 }
 
 const ComentarySlider: React.FC<ComentarySliderProps> = ({ data }) => {
-    const dataEntries = Object.entries(data || {}).filter(([, value]) =>
-        value.columna13 !== undefined
-    );
-    const hasData = dataEntries.length > 0;
+    const dataEntries = data.filter(item => item.columna13 !== undefined);
 
+    const hasData = dataEntries.length > 0;
+    console.log("commentaries", dataEntries)
     const responsive = {
         superLargeDesktop: {
             breakpoint: { max: 4000, min: 1280 },
@@ -50,7 +49,7 @@ const ComentarySlider: React.FC<ComentarySliderProps> = ({ data }) => {
     }
 
     return (
-        <div className="w-full max-w-7xl mx-auto p-4">
+        <div className="w-full max-w-full mx-auto p-4">
             <Carousel
                 responsive={responsive}
                 infinite={false}
@@ -61,26 +60,11 @@ const ComentarySlider: React.FC<ComentarySliderProps> = ({ data }) => {
                 containerClass="carousel-container"
                 itemClass="px-2 py-4 flex justify-center"
                 arrows
-                renderButtonGroupOutside
-                customLeftArrow={
-                    <button className="p-2 bg-pink-600 hover:bg-pink-700 text-white rounded-full mr-2">
-                        <svg width="24" height="24" fill="currentColor">
-                            <path d="M15 19l-7-7 7-7" />
-                        </svg>
-                    </button>
-                }
-                customRightArrow={
-                    <button className="p-2 bg-pink-600 hover:bg-pink-700 text-white rounded-full ml-2">
-                        <svg width="24" height="24" fill="currentColor">
-                            <path d="M9 5l7 7-7 7" />
-                        </svg>
-                    </button>
-                }
             >
-                {dataEntries.map(([key, dataset]) => (
+                {dataEntries.map((dataset, index) => (
                     <div
                         className="bg-white shadow-lg rounded-lg p-6 relative h-[240px] w-full border-2 border-gray-200 mx-2"
-                        key={key}
+                        key={index}
                     >
                         <div className="flex items-center mb-4">
                             <div className="bg-purple-100 rounded-full p-2 mr-3">

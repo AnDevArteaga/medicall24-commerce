@@ -45,7 +45,7 @@ const ServiciosBexa: React.FC = () => {
                     </div>
 
                     {/* Botón */}
-                    <ButtonIndex link="/bexa" />
+                    <ButtonIndex link="/bexa" label="Más información" />
                 </div>
             </div>
         </main>

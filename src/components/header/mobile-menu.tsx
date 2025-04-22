@@ -120,7 +120,7 @@ const MobileMenu: React.FC<Props> = ({
                   </a>
                 </li>
                 <li>
-                  <a href="/Planes-Telemedicina-Personas" className="block text-gray-600 hover:text-pink-400 text-lg">
+                  <a href="/personas" className="block text-gray-600 hover:text-pink-400 text-lg">
                     Planes de Telemedicina
                   </a>
                 </li>

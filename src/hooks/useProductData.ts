@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { fetchCodeXProduct, getProducts } from "../services/supabase/products";
 import { CodeXProduct, Product } from "../interfaces/product.interface"; // ajusta la ruta
 
-export const useBexaData = () => {
+export const useProductData = () => {
   const [codigos, setCodigos] = useState<CodeXProduct[] | null>(null);
   const [productos, setProductos] = useState<Product[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -15,7 +15,7 @@ export const useBexaData = () => {
           fetchCodeXProduct(),
           getProducts(),
         ]);
-
+        console.log(codigos, productosData)
         setCodigos(codigosData);
         setProductos(productosData);
       } catch (err) {

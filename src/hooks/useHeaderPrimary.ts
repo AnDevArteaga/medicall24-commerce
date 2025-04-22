@@ -13,7 +13,7 @@ export const useHeaderPrimary = () => {
       target: "_blank",
     },
     {
-      href: "/Planes-Telemedicina-Personas",
+      href: "/personas",
       label: "Planes de Telemedicina",
       target: "_blank",
     },

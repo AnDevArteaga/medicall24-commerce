@@ -4,9 +4,9 @@ import BexaExam from "../components/sections/bexa/bexa-exam";
 import BexaPackage from "../components/sections/bexa/bexa-package";
 import Allies from "../components/allies/allies-list";
 import Testimonials from "../components/sections/bexa/testimonies/testimonies-container";
-import { useBexaData } from "../hooks/useBexaData";
+import { useProductData } from "../hooks/useProductData";
 // import { useMultiModal } from "../hooks/useMultiModal";
-import { useProductoSeleccionado } from "../hooks/useSelectedProductBexa";
+import { useProductoSeleccionado } from "../hooks/useSelectedProduct";
 import ModalProducto from "../components/modals/bexa/products";
 import CodeInvalid from "../components/modals/bexa/code-invalid";
 import TermCond from "../components/modals/term&cond/bexa/term-cond";
@@ -19,7 +19,7 @@ import { useAllies } from "../hooks/useAllies";
 const Bexa: React.FC = () => {
     const [searchParams] = useSearchParams();
     const promo = searchParams.get("promo") ?? "";
-    const { codigos, productos, loading, error } = useBexaData();
+    const { codigos, productos, loading, error } = useProductData();
     const { isModalOpen, openModal, closeModal, getModalProps } = useModal();
     const { producto, seleccionarProducto, limpiarProducto } =
         useProductoSeleccionado();

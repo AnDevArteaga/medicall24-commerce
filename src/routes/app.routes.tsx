@@ -5,6 +5,7 @@ const Home = lazy(() => import("../pages/index"));
 const FindDoctor = lazy(() => import("../pages/findDoctor"));
 const Bexa = lazy(() => import("../pages/bexa"));
 const Allies = lazy(() => import("../pages/allies"));
+const PeoplePlan = lazy(() => import("../pages/peoplePlan"))
 
 
 const routes: RouteObject[] = [
@@ -13,7 +14,7 @@ const routes: RouteObject[] = [
     element: <Home />
   },
   {
-    path: "/find-doctor",
+    path: "/buscar-médico",
     element: <FindDoctor />
   },
   {
@@ -21,7 +22,11 @@ const routes: RouteObject[] = [
     element: <Bexa />
   },
   {
-    path: "/allies",
+    path: "/personas",
+    element: <PeoplePlan />
+  },
+  {
+    path: "/aliados",
     element: <Allies />
   },
 ];

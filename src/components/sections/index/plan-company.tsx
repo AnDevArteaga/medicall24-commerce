@@ -37,7 +37,7 @@ const PlanesEmpresa: React.FC = () => {
                         Reduce el ausentismo laboral
                     </p>
 
-                    <ButtonIndex link="/empresas" />
+                    <ButtonIndex link="/empresas" label="Más información" />
                 </div>
             </div>
         </main>

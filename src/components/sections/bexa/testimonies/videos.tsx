@@ -1,6 +1,5 @@
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import gabriela from "../../../../assets/img/posterGabrielaLobo.jpg";
 import thelmira from "../../../../assets/img/posterThelmiraVa.jpg";
 import miriam from "../../../../assets/img/posterMirian.jpg";
@@ -82,17 +81,7 @@ const VideoSlider: React.FC<VideoSliderProps> = ({ data }) => {
                 containerClass="carousel-container"
                 itemClass="px-2 py-4 flex justify-center"
                 arrows
-                renderButtonGroupOutside
-                customLeftArrow={
-                    <button className="p-2 bg-pink-600 hover:bg-pink-700 text-white rounded-full mr-2">
-                        <ChevronLeft size={24} />
-                    </button>
-                }
-                customRightArrow={
-                    <button className="p-2 bg-pink-600 hover:bg-pink-700 text-white rounded-full ml-2">
-                        <ChevronRight size={24} />
-                    </button>
-                }
+                
             >
                 {videoEntries.map(([key, { url, name }]) => (
                     <div

@@ -21,4 +21,6 @@ export interface CodeXProduct {
     nombre: string;
     valor_cop: number;
     iva: number;
+
   }
+

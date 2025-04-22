@@ -35,7 +35,7 @@ const PlanesTelemedicina: React.FC = () => {
                     </p>
 
                     {/* Botón */}
-                    <ButtonIndex link="planes-telemedicina-personas" />
+                    <ButtonIndex link="personas" label="Más información" />
                 </div>
 
                 {/* Imagen */}
