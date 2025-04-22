@@ -1,0 +1,36 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+
+* { font-family: 'Roboto', sans-serif;
+}
+
+::-webkit-scrollbar {
+   width: 7px;
+ }
+ 
+ /* Handle */
+ ::-webkit-scrollbar-thumb {
+     background: #B30765; 
+     border-radius: 10px;
+ }
+ 
+ /* Handle on hover */
+ ::-webkit-scrollbar-thumb:hover {
+   background: #d4157e;
+ }
+
+ @keyframes fade-slide-in-simulated {
+   from {
+     opacity: 0;
+     transform: translateY(5px);
+   }
+   to {
+     opacity: 1;
+     transform: translateY(0);
+   }
+ }
+ 
+ .animate-fade-slide-in {
+   animation: fade-slide-in 0.2s ease-out forwards;
+ }
