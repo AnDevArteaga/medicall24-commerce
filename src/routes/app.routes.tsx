@@ -6,6 +6,7 @@ const FindDoctor = lazy(() => import("../pages/findDoctor"));
 const Bexa = lazy(() => import("../pages/bexa"));
 const Allies = lazy(() => import("../pages/allies"));
 const PeoplePlan = lazy(() => import("../pages/peoplePlan"))
+const Company = lazy(() => import("../pages/company"))
 
 
 const routes: RouteObject[] = [
@@ -24,6 +25,10 @@ const routes: RouteObject[] = [
   {
     path: "/personas",
     element: <PeoplePlan />
+  },
+  {
+    path: "/empresas",
+    element: <Company />
   },
   {
     path: "/aliados",

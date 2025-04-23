@@ -2,6 +2,7 @@ import React from 'react';
 import Layout from '../layouts/layout-secondary';
 import InfoPlan from '../components/sections/peoplePlan/plan-info';
 import Plans from '../components/sections/peoplePlan/render-plans';
+import Simulator from '../components/sections/peoplePlan/simulator'
 import TermCondModal from '../components/modals/term&cond/bexa/term-cond';
 import { useModal } from '../contexts/modals';
 import { useProductData } from '../hooks/useProductData';
@@ -35,6 +36,7 @@ const PeoplePlan: React.FC = () => {
             <main>
                 <InfoPlan />
                 <Plans planSelected={handlePlanSelected} />
+                <Simulator />
             </main>
             {isModalOpen("termCond") && termCondProps?.onClose && (
                 <TermCondModal {...termCondProps} />

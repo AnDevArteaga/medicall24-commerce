@@ -12,9 +12,7 @@ interface ModalProductoProps {
 const ModalProducto: React.FC<ModalProductoProps> = (
     { producto, onClose  }
 ) => {
-
     const { openModal, closeModal } = useModal();
-
     const onNext = () => {
         closeModal("producto");
         if (producto.id_producto === 16) {
