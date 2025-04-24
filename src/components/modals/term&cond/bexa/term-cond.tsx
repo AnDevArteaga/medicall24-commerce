@@ -8,10 +8,11 @@ interface TerminosModalProps {
     headerTitle: string;
     content: TermBlock[];
     next?: boolean;
+    onClick?: () => void;
 }
 
 const TermCondModal: React.FC<TerminosModalProps> = (
-    { onClose, headerTitle, content, next },
+    { onClose, headerTitle, content, next, onClick },
 ) => {
     const [accept, setAccept] = useState(false);
 
@@ -19,11 +20,7 @@ const TermCondModal: React.FC<TerminosModalProps> = (
         setAccept(e.target.checked);
     };
 
-    const handleAccept = () => {
-        if (accept) {
-            window.location.href = "/compra"; // o tu lógica para continuar
-        }
-    };
+
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
@@ -105,7 +102,7 @@ const TermCondModal: React.FC<TerminosModalProps> = (
                             <InputCheck id="accept" checked={accept} onChange={handleChange} label="Acepto los términos y condiciones" />
                             <div className="flex space-x-4">
                                 <ButtonForm onClick={onClose} text="Cancelar" />
-                                <ButtonForm onClick={handleAccept} text="Aceptar" disabled={!accept} />
+                                <ButtonForm onClick={onClick} text="Aceptar" disabled={!accept} />
                             </div>
                         </div>
                     )

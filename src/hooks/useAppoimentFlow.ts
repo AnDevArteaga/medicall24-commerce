@@ -1,3 +1,4 @@
+//Hook para el flujo de agendamiento de citas
 import { useEffect, useState } from "react";
 import { Appointment } from "../contexts/appoiment";
 import {

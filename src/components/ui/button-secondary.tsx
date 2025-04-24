@@ -1,9 +1,10 @@
 import React from 'react'
 
 interface buttonSecondaryProps {
-    link: string
+    link?: string
     color: string
     text: string
+    onClick?: () => void
 }
 const ButtonSecondary: React.FC<buttonSecondaryProps> = ({link, color, text}) => {
 return (

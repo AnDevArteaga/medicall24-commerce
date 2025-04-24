@@ -11,7 +11,7 @@ const HeaderSecondary: React.FC = () => {
   const label = isOnAliados ? "Volver" : "Inicio";
 
   return (
-    <header className="bg-gray-100 text-white shadow-md z-10">
+    <header className="bg-gray-100 text-white shadow-md">
       <div className="container mx-auto flex justify-between items-center py-4 px-4">
         {/* Logo */}
         <div className="flex items-center">
