@@ -1,25 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { usePurchaseContext } from "../contexts/checkout";
 import { getDetailPayment } from "../services/azure/payments";
-import { detailsPayment } from "../interfaces/checkout.interfase";
+
 
 export const DetailPayment = () => {
     const [loading, setLoading] = useState(false);
-    const [detailPayment, setDetailPayment] = useState<detailsPayment>(
-        {
-            paymentMethod: "",
-            description: null,
-            valor: 0,
-            descuento: 0,
-            subtotal: 0,
-            iva: 0,
-            commission: 0,
-            total: 0,
-        },
-    );
-    const { generalPaymentData, selectedMethod } = usePurchaseContext();
+
+    const { generalPaymentData, selectedMethod, setDetailPayment } = usePurchaseContext();
     const handleGetDetailPayment = async () => {
         const { productId, discount } = generalPaymentData;
+        console.log('productId', productId, 'discount', discount)
         setLoading(true);
         try {
             const detailPayment = await getDetailPayment(
@@ -28,6 +18,7 @@ export const DetailPayment = () => {
                 discount,
             );
             setDetailPayment(detailPayment);
+            return detailPayment;
         } catch (error) {
             console.error("Error al obtener el método de pago:", error);
             setDetailPayment({
@@ -45,9 +36,6 @@ export const DetailPayment = () => {
         }
     };
 
-    useEffect(() => {
-        handleGetDetailPayment();
-    }, []);
 
-    return { loading, detailPayment };
+    return { loading, handleGetDetailPayment };
 };

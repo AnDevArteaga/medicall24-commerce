@@ -20,13 +20,13 @@ const Card: React.FC = () => {
                     maxLength={16}
                     placeholder="XXXXXXXXXXXXXXXX"
                     onChange={handleSelectPaymentMethod}
-                    value={paymentMethod.number}
+                    value={paymentMethod.card.number}
                     label="Número de Tarjeta"
                     obligatory
                     errorMessage={errors.number}
                     className={` ${
                         errors.number ? "border-red-500" : "border-gray-300"
-                    } ${getInputClass(paymentMethod, "number", "border-2 border-gray-300", "border-2 border-primary")}`}
+                    } ${getInputClass(paymentMethod.card, "number", "border-2 border-gray-300", "border-2 border-primary")}`}
                     autoComplete="off"
                 />
 
@@ -35,19 +35,19 @@ const Card: React.FC = () => {
                     name="cardHolder"
                     maxLength={16}
                     onChange={handleSelectPaymentMethod}
-                    value={paymentMethod.cardHolder || ""}
+                    value={paymentMethod.card.cardHolder || ""}
                     autoComplete="off"
                     obligatory
                     errorMessage={null}
                     label="Nombre de la Tarjeta"
-                    className={getInputClass(paymentMethod, "cardHolder", "border-2 border-gray-300", "border-2 border-primary")}
+                    className={getInputClass(paymentMethod.card, "cardHolder", "border-2 border-gray-300", "border-2 border-primary")}
                 />
                 <div className="flex flex-row space-x-2 justify-between">
                 <div className="flex flex-col space-x-2 items-center justify-between">
                     <SelectInput
                         label="Fecha de Expiración"
                         name="expMonth"
-                        value={paymentMethod.expMonth || ""}
+                        value={paymentMethod.card.expMonth || ""}
                         onChange={handleSelectPaymentMethod}
                         obligatory
                         options={Array.from({ length: 12 }, (_, i) => ({
@@ -56,13 +56,13 @@ const Card: React.FC = () => {
                         }))}
                         valueKey="value"
                         labelKey="label"
-                        className={getInputClass(paymentMethod, "expMonth", "border-2 border-gray-300", "border-2 border-primary")}
+                        className={getInputClass(paymentMethod.card, "expMonth", "border-2 border-gray-300", "border-2 border-primary")}
 
                     />
                     <SelectInput
                         label="Fecha de Expiración"
                         name="expYear"
-                        value={paymentMethod.expYear || ""}
+                        value={paymentMethod.card.expYear || ""}
                         onChange={handleSelectPaymentMethod}
                         obligatory
                         options={Array.from({ length: 15 }, (_, i) => {
@@ -75,7 +75,7 @@ const Card: React.FC = () => {
                         })}
                         valueKey="value"
                         labelKey="label"
-                        className={getInputClass(paymentMethod, "expYear", "border-2 border-gray-300", "border-2 border-primary")}
+                        className={getInputClass(paymentMethod.card, "expYear", "border-2 border-gray-300", "border-2 border-primary")}
                     />
                 </div>
                 <div className="flex flex-row space-x-2">  
@@ -103,12 +103,12 @@ const Card: React.FC = () => {
                         maxLength={3}
                         onChange={handleSelectPaymentMethod}
                         placeholder="XXX"
-                        value={paymentMethod.cvc || ""}
+                        value={paymentMethod.card.cvc || ""}
                         autoComplete="off"
                         obligatory
                         errorMessage={null}
                         label="CVC"
-                        className={getInputClass(paymentMethod, "cvc", "border-2 border-gray-300", "border-2 border-primary")}
+                        className={getInputClass(paymentMethod.card, "cvc", "border-2 border-gray-300", "border-2 border-primary")}
                     />
                 </div>
                 </div>

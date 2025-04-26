@@ -7,8 +7,7 @@ import { loadBankPse } from "../services/azure/banks";
 import { BankPse } from "../interfaces/checkout.interfase";
 import { validateEmail, validateLength } from "../utils/validators";
 import { setFieldError } from "../utils/forms";
-
-
+import { validateCodeAuthorization } from "../services/azure/payments";
 
 const methods = [
     {
@@ -54,10 +53,13 @@ export const useSelectDataPurchase = () => {
         setCreditData,
         setErrors,
         setValidations,
+        creditData,
+        registerData,
     } = usePurchaseContext();
     const [departments, setDepartments] = useState<Department[]>([]);
     const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
     const [banksPse, setBanksPse] = useState<BankPse[]>([]);
+    const [Loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (paymentMethod.type === "PSE" && purchaseData.typeId !== "CC") {
@@ -71,30 +73,34 @@ export const useSelectDataPurchase = () => {
         e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>,
     ) => {
         const { name, value } = e.target;
-                let newValue
-                if (name === "identification" || name === "phone") {
-                    newValue = value.replace(/[^0-9]/g, '')
-                } else {
-                    newValue = value
-                }
-                if (name === 'email') {
-                const emailValidation = validateEmail(value);
-                console.log(emailValidation);
-                if (!emailValidation) {
-                    setFieldError(name, 'El correo electrónico no es válido', setErrors);
-                    setValidations((prev) => ({
-                        ...prev,
-                        emailValid: false,
-                    }));
-                } else {
-                    setFieldError(name, null, setErrors); // Limpiar el error si el correo electrónico es válido
-                    setValidations((prev) => ({
-                        ...prev,
-                        emailValid: true,
-                    }));
-                }}
-        
-        
+        let newValue;
+        if (name === "identification" || name === "phone") {
+            newValue = value.replace(/[^0-9]/g, "");
+        } else {
+            newValue = value;
+        }
+        if (name === "email") {
+            const emailValidation = validateEmail(value);
+            console.log(emailValidation);
+            if (!emailValidation) {
+                setFieldError(
+                    name,
+                    "El correo electrónico no es válido",
+                    setErrors,
+                );
+                setValidations((prev) => ({
+                    ...prev,
+                    emailValid: false,
+                }));
+            } else {
+                setFieldError(name, null, setErrors); // Limpiar el error si el correo electrónico es válido
+                setValidations((prev) => ({
+                    ...prev,
+                    emailValid: true,
+                }));
+            }
+        }
+
         setPurchaseData((prev) => ({
             ...prev,
             [name]: newValue,
@@ -105,12 +111,16 @@ export const useSelectDataPurchase = () => {
         e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>,
     ) => {
         const { name, value } = e.target;
-        let newValue
+        let newValue;
         if (name === "number") {
-            newValue = value.replace(/[^0-9]/g, '')
+            newValue = value.replace(/[^0-9]/g, "");
             const numberValidation = validateLength(newValue, 16, 16);
             if (!numberValidation) {
-                setFieldError(name, 'El número de tarjeta no es válido', setErrors);
+                setFieldError(
+                    name,
+                    "El número de tarjeta no es válido",
+                    setErrors,
+                );
                 setValidations((prev) => ({
                     ...prev,
                     cardNumber: false,
@@ -123,10 +133,14 @@ export const useSelectDataPurchase = () => {
                 }));
             }
         } else if (name === "phoneNumber") {
-            newValue = value.replace(/[^0-9]/g, '')
+            newValue = value.replace(/[^0-9]/g, "");
             const phoneValidation = validateLength(newValue, 10, 10);
             if (!phoneValidation) {
-                setFieldError(name, 'El número de teléfono no es válido', setErrors);
+                setFieldError(
+                    name,
+                    "El número de teléfono no es válido",
+                    setErrors,
+                );
                 setValidations((prev) => ({
                     ...prev,
                     phoneNumber: false,
@@ -139,14 +153,13 @@ export const useSelectDataPurchase = () => {
                 }));
             }
         } else {
-            newValue = value
+            newValue = value;
         }
         setPaymentMethod((prev) => ({
             ...prev,
             [name]: newValue,
         }));
     };
-
 
     const handleSelectDataCredit = (
         e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>,
@@ -163,19 +176,20 @@ export const useSelectDataPurchase = () => {
         setPaymentMethod((prev) => ({
             ...prev,
             type: method,
-            number: "",
-            cardHolder: "",
-            expMonth: "",
-            expYear: "",
-            installments: 0,
-            cvc: "",
-            financialInstitutionCode: 0,
-            userType: "PERSON",
+            card: {
+                number: "",
+                cvc: "",
+                expMonth: "",
+                expYear: "",
+                cardHolder: "",
+            },
+            financialInstitutionCode: "0",
+            installments: "0",
+            paymentDescription: "Compra de Producto de Telemedicina",
             phoneNumber: "",
-            paymentDescription: "",
             userLegalId: "",
             userLegalIdType: "",
-
+            userType: "PERSON",
         }));
         setCreditData((prev) => ({
             ...prev,
@@ -185,11 +199,13 @@ export const useSelectDataPurchase = () => {
             ...prev,
             number: null,
             phoneNumber: null,
+            meddipayAuthorizationCode: null,
         }));
         setValidations((prev) => ({
             ...prev,
             cardNumber: false,
             phoneNumber: false,
+            meddipayAuthorizationCode: false,
         }));
     };
 
@@ -224,6 +240,34 @@ export const useSelectDataPurchase = () => {
         }
     };
 
+    const handleValidtionAuthorizationCode = async () => {
+        if (creditData.meddipayAuthorizationCode) {
+            setLoading(true);
+            const isValid = await validateCodeAuthorization(
+                creditData.meddipayAuthorizationCode,
+                registerData.user.identification,
+            );
+            if (!isValid) {
+                setFieldError(
+                    "meddipayAuthorizationCode",
+                    "El código de autorización es incorrecto",
+                    setErrors,
+                );
+                setValidations((prev) => ({
+                    ...prev,
+                    meddipayAuthorizationCode: false,
+                }));
+            } else {
+                setFieldError("meddipayAuthorizationCode", null, setErrors);
+                setValidations((prev) => ({
+                    ...prev,
+                    meddipayAuthorizationCode: true,
+                }));
+            }
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         handleGetDepartments();
         handleGetBanksPse();
@@ -241,6 +285,8 @@ export const useSelectDataPurchase = () => {
         municipalities,
         methods,
         onMethodChange,
-        banksPse
+        banksPse,
+        handleValidtionAuthorizationCode,
+        Loading,
     };
 };

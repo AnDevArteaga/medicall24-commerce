@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode, useRef, useEffect } from 'react';
 import { User } from '../interfaces/user.interface';
-import { PurchaseData, PaymentMethodData, CreditData, CustomPaymentData } from '../interfaces/checkout.interfase';
+import { PurchaseData, PaymentMethodData, CreditData, CustomPaymentData, detailsPayment } from '../interfaces/checkout.interfase';
 import { Validations } from '../interfaces/validations.interface';
 import { buildFullName } from '../utils/forms';
 import Slider from "react-slick";
@@ -40,6 +40,8 @@ interface PurchaseContextProps {
   setProduct: React.Dispatch<React.SetStateAction<Product | CodeXProduct | null>>;
   generalPaymentData: CustomPaymentData;
   setGeneralPaymentData: React.Dispatch<React.SetStateAction<CustomPaymentData>>;
+  detailPayment: detailsPayment;
+  setDetailPayment: React.Dispatch<React.SetStateAction<detailsPayment>>;
 }
 
 const PurchaseContext = createContext<PurchaseContextProps | undefined>(undefined);
@@ -59,6 +61,7 @@ export const PurchaseProvider = ({ children }:{ children: ReactNode }) => {
     emailValid: true,
     cardNumber: false,
     phoneNumber: false,
+    meddipayAuthorizationCode: false,
   });
   
   const [errors, setErrors] = useState<Record<string, string | null>>({ //Estado para controlar los errores
@@ -71,11 +74,23 @@ export const PurchaseProvider = ({ children }:{ children: ReactNode }) => {
   });
   const [registerData, setRegisterData] = useState<User>({ user: { identification: "", typeId: "", name1: "", name2: "", lastName1: "", lastName2: "", email: "", password: "", confirmPassword: "" }, epsId: null, regimenId: null });
   const [purchaseData, setPurchaseData] = useState<PurchaseData>({ identification: "", typeId: "", names: "", lastNames: "", email: "", address: "", phone: "", departament: "", city: "" });
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodData>({ number: "", cvc: "", expMonth: "", expYear: "", cardHolder: "", financialInstitutionCode: 0, installments: 0, paymentDescription: "", phoneNumber: "", type: "", userLegalId: "", userLegalIdType: "", userType: "" });
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodData>({ card: { number: "", cvc: "", expMonth: "", expYear: "", cardHolder: "" }, financialInstitutionCode: "0", installments: "0", paymentDescription: "", phoneNumber: "", type: "", userLegalId: "", userLegalIdType: "", userType: "" });
   const [creditData, setCreditData] = useState<CreditData>({ meddipayAuthorizationCode: "" });
   const [selectedMethod, setSelectedMethod] = useState<string>("");
 
-  const [generalPaymentData, setGeneralPaymentData] = useState<CustomPaymentData>({ identification: "", typeId: "", names: "", lastNames: "", email: "", address: "", phone: "", discount: 0, productId: 0, PaymentMethod: { number: "", cvc: "", expMonth: "", expYear: "", cardHolder: "", financialInstitutionCode: 0, installments: 0, paymentDescription: "", phoneNumber: "", type: "", userLegalId: "", userLegalIdType: "", userType: "" } });
+  const [generalPaymentData, setGeneralPaymentData] = useState<CustomPaymentData>({ identification: "", typeId: "", names: "", lastNames: "", email: "", address: "", phone: "", discount: 0, productId: 0, paymentMethod: { card: { number: "", cvc: "", expMonth: "", expYear: "", cardHolder: "" }, financialInstitutionCode: "0", installments: "0", paymentDescription: "", phoneNumber: "", type: "", userLegalId: "", userLegalIdType: "", userType: "" } });
+      const [detailPayment, setDetailPayment] = useState<detailsPayment>(
+          {
+              paymentMethod: "",
+              description: null,
+              valor: 0,
+              descuento: 0,
+              subtotal: 0,
+              iva: 0,
+              commission: 0,
+              total: 0,
+          },
+      );
 
 
       // Referencia del slider para poder controlarlo directamente
@@ -114,7 +129,7 @@ export const PurchaseProvider = ({ children }:{ children: ReactNode }) => {
 
   
   return (
-    <PurchaseContext.Provider value={{ isRegistered, setIsRegistered, registerData, setRegisterData,  currentStep, setCurrentStep, validations, setValidations, handleNext, handlePrevious, sliderRef, statusRegister, setStatusRegister, errors, setErrors, purchaseData, setPurchaseData, paymentMethod, setPaymentMethod, isValidPaymentMethod, setIsValidPaymentMethod, selectedMethod, setSelectedMethod, creditData, setCreditData, typesId, setTypesId, product, setProduct, generalPaymentData, setGeneralPaymentData }}>
+    <PurchaseContext.Provider value={{ isRegistered, setIsRegistered, registerData, setRegisterData,  currentStep, setCurrentStep, validations, setValidations, handleNext, handlePrevious, sliderRef, statusRegister, setStatusRegister, errors, setErrors, purchaseData, setPurchaseData, paymentMethod, setPaymentMethod, isValidPaymentMethod, setIsValidPaymentMethod, selectedMethod, setSelectedMethod, creditData, setCreditData, typesId, setTypesId, product, setProduct, generalPaymentData, setGeneralPaymentData, detailPayment, setDetailPayment }}>
       {children}
     </PurchaseContext.Provider>
   );

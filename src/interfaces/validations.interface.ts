@@ -3,4 +3,5 @@ export interface Validations {
     emailValid: boolean;
     cardNumber: boolean;
     phoneNumber: boolean;
+    meddipayAuthorizationCode: boolean;
 }

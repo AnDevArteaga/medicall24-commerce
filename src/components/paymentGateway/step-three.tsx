@@ -1,15 +1,13 @@
 import React from "react";
-import { DetailPayment } from "../../hooks/useDetailPayment";
 import { usePurchaseContext } from "../../contexts/checkout";
 import { formatNumber } from "../../utils/format";
 
 const StepThree: React.FC = () => {
-    const { detailPayment, loading } = DetailPayment();
-    const { product } = usePurchaseContext();
+    const { product, detailPayment } = usePurchaseContext();
     const getProductName = () => {
-        if (!product) return 'Sin producto';
-        return 'nombre' in product ? product.nombre : product.producto;
-      };
+        if (!product) return "Sin producto";
+        return "nombre" in product ? product.nombre : product.producto;
+    };
     return (
         <div className="max-w-md mx-auto mt-12 bg-white p-6 border rounded-lg border-gray-300">
             {/* Título principal */}
@@ -29,7 +27,8 @@ const StepThree: React.FC = () => {
                     Método de Pago
                 </span>
                 <span className="text-gray-600">
-                    {detailPayment?.paymentMethod === "BANCOLOMBIA_TRANSFER"
+                    {detailPayment?.paymentMethod ===
+                            "BANCOLOMBIA_TRANSFER"
                         ? "Bancolombia"
                         : detailPayment?.paymentMethod === "CARD"
                         ? "Tarjeta"
@@ -40,9 +39,13 @@ const StepThree: React.FC = () => {
             {/* Subtotal */}
             <div className="flex justify-between bg-gray-100 items-center py-3 px-4 bg-gray-50 rounded-lg mb-2 hover:bg-gray-200 transition">
                 <span className="text-gray-700 font-medium">Sub total</span>$
-                {detailPayment.subtotal
-                    ? formatNumber(detailPayment.subtotal)
-                    : "0"} COP
+                {
+                    <>
+                        {detailPayment.subtotal
+                            ? formatNumber(detailPayment.subtotal)
+                            : "0"} COP
+                    </>
+                }
             </div>
 
             {/* IVA */}
@@ -61,7 +64,7 @@ const StepThree: React.FC = () => {
                         Comisión de la transacción
                     </span>
                     <span className="text-gray-700 font-medium">
-                        ${detailPayment.commission
+                        {detailPayment.commission
                             ? formatNumber(detailPayment.commission)
                             : "0"} COP
                     </span>
@@ -83,9 +86,13 @@ const StepThree: React.FC = () => {
                     Total
                 </span>
                 <span className="text-green-700 font-bold text-lg">
-                    ${detailPayment.total
-                        ? formatNumber(detailPayment.total)
-                        : "0"} COP
+                    {
+                        <>
+                            ${detailPayment.total
+                                ? formatNumber(detailPayment.total)
+                                : "0"} COP
+                        </>
+                    }
                 </span>
             </div>
         </div>

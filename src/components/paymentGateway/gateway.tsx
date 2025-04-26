@@ -7,6 +7,7 @@ import Slider from "react-slick";
 
 const StepOne = lazy(() => import("./step-one"));
 const StepTwo = lazy(() => import("./step-two"));
+const StepThree = lazy(() => import("./step-three"));
 
 // Configuración de Slick Slider
 const settings = {
@@ -38,12 +39,7 @@ const PaginacionSlider: React.FC = () => {
             >
                 <StepOne />
                 <StepTwo />
-                <div className="flex justify-center items-center p-8 bg-gray-100 rounded-lg">
-                    <h3 className="text-xl font-semibold">
-                        Step 3: Conclusion
-                    </h3>
-                    <p className="text-lg mt-4">You've completed the slider!</p>
-                </div>
+                <StepThree />
             </Slider>
 
             {/* Botones de navegación */}

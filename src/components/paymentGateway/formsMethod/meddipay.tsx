@@ -5,10 +5,11 @@ import { getInputClass } from "../../../utils/forms";
 import InputText from "../../ui/input";
 import ButtonBuy from "../../ui/button-buy";
 import ButtonForm from "../../ui/button-forms";
+import {CheckCircle } from "lucide-react";
 
 const Pse: React.FC = () => {
-    const { creditData, errors } = usePurchaseContext();
-    const { handleSelectDataCredit } = useSelectDataPurchase();
+    const { creditData, errors, validations } = usePurchaseContext();
+    const { handleSelectDataCredit, handleValidtionAuthorizationCode, Loading } = useSelectDataPurchase();
     return (
         <div>
             <h3 className="text-base font-bold mb-4 text-gray-700">
@@ -23,7 +24,7 @@ const Pse: React.FC = () => {
                 </a>
             </div>
             <div className="space-y-8">
-                
+                    <div>
                     <InputText
                         type="text"
                         name="meddipayAuthorizationCode"
@@ -39,13 +40,24 @@ const Pse: React.FC = () => {
                         )}
                         errorMessage={errors.meddipayAuthorizationCode}
                     />
+                                        {validations.meddipayAuthorizationCode && (
+                                <div className="flex flex-row">
+                                    <CheckCircle className="text-green-600 w-4 mr-2">
+                                    </CheckCircle>
+                                    <p className="text-green-600 text-xs mt-1">
+                                        Código promocional válido
+                                    </p>
+                                </div>
+                            )}
+                    </div>
+                
                     <div className="flex items-center justify-center">
                     <ButtonForm
-                        onClick={() => console.log("Validar")}
-                        text="Validar"
+                        onClick={handleValidtionAuthorizationCode}
+                        text={Loading ? "Validando..." : "Validar"}
                     />
                     </div>
-                   
+
                 
             </div>
         </div>

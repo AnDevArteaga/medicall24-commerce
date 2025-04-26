@@ -5,13 +5,15 @@ import { usePurchaseContext } from "../contexts/checkout";
 import { useModal } from "../contexts/modals";
 import { termBexaPackageContent } from "../components/modals/term&cond/bexa/content-terms";
 import { validateStates } from "../utils/validate-fields";
+import { usePaymentFlow } from "../hooks/usePaymentFlow";
 
 const useNavigationButton = (
     currentStep: number,
     isUserRegistered: boolean,
     setCurrentStep: React.Dispatch<React.SetStateAction<number>>,
 ) => {
-    const { validations, registerData, handleNext, purchaseData, paymentMethod, selectedMethod, creditData } = usePurchaseContext();
+    const { validations, registerData, handleNext, purchaseData, paymentMethod, selectedMethod, creditData, generalPaymentData, detailPayment } = usePurchaseContext();
+    const { executeAction } = usePaymentFlow();
     const { openModal, closeModal } = useModal();
     const [buttonConfig, setButtonConfig] = useState({
         text: "",
@@ -50,7 +52,9 @@ const useNavigationButton = (
             case "MEDDIPAY":
                 return validateFields(creditData, [
                     "meddipayAuthorizationCode",
-                ], true);
+                ], validateStates(validations, [
+                    "meddipayAuthorizationCode",
+                ] ));
             default:
                 return true;
         }
@@ -123,20 +127,24 @@ const useNavigationButton = (
 
             console.log()
             config.onClick = () => {
-                handleNext();
+                executeAction("nextStepTwo");
             };
         }
 
         // Paso 2
         if (currentStep === 2) {
             config.text = "Pagar";
-            config.disabled = !validateFields(registerData, [
-                "user.password",
-                "user.confirmPassword",
-            ], false); // Validamos otro objeto
+            console.log(generalPaymentData)
+            config.disabled = !validateFields(detailPayment, [
+                "paymentMethod",
+                "valor",
+                "subtotal",
+                "total",
+             
+            ], 
+             true);
             config.onClick = () => {
-                console.log("Función Z ejecutada en paso 2");
-                // Lógica de pago o lo que necesites
+                executeAction("paidStepThree");
             };
         }
 

@@ -11,13 +11,15 @@ export interface PurchaseData {
 }
 
 export interface PaymentMethodData {
+  card: {
     number: string;
     cvc: string;
     expMonth: string;
     expYear: string;
     cardHolder: string;
-    financialInstitutionCode: number
-    installments: number
+  }
+    financialInstitutionCode: string
+    installments: string
     paymentDescription: string,
     phoneNumber: string,
     type: string,
@@ -27,7 +29,7 @@ export interface PaymentMethodData {
 }
 
 export interface CustomPaymentData extends Omit<PurchaseData, 'departament' | 'city'> { // Estos no los requiero para pagar, pero si para el registro de la compra`
-  PaymentMethod: PaymentMethodData; 
+  paymentMethod: PaymentMethodData; 
   discount: number;
   productId: number;
 }
@@ -53,5 +55,12 @@ export interface detailsPayment {
   total: number;
 }
 
-
+export interface CreditUser {
+  id: number,
+  identificacion_usuario: string,
+  id_producto: number,
+  codigo_credito: string,
+  codigo_plataforma_credito: number,
+  validado: boolean
+}
 
