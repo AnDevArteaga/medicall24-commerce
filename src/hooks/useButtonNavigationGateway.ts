@@ -4,19 +4,57 @@ import { validateFields } from "../utils/validate-fields"; // Importamos la func
 import { usePurchaseContext } from "../contexts/checkout";
 import { useModal } from "../contexts/modals";
 import { termBexaPackageContent } from "../components/modals/term&cond/bexa/content-terms";
+import { validateStates } from "../utils/validate-fields";
 
 const useNavigationButton = (
     currentStep: number,
     isUserRegistered: boolean,
     setCurrentStep: React.Dispatch<React.SetStateAction<number>>,
 ) => {
-    const { validations, registerData, handleNext } = usePurchaseContext();
+    const { validations, registerData, handleNext, purchaseData, paymentMethod, selectedMethod, creditData } = usePurchaseContext();
     const { openModal, closeModal } = useModal();
     const [buttonConfig, setButtonConfig] = useState({
         text: "",
         disabled: true,
         onClick: () => {},
     });
+
+    const validateByMethod = (method: string): boolean => {
+        switch (method) {
+            case "BANCOLOMBIA_TRANSFER":
+                return true
+            
+            case "CARD":
+                return validateFields(paymentMethod, [
+                    "number",
+                    "cardHolder",
+                    "expMonth",
+                    "expYear",
+                    "installments",
+                    "cvc",
+                ], validateStates(validations, [
+                    "cardNumber",
+                ] ));
+    
+            case "PSE":
+                return validateFields(paymentMethod, [
+                    "userType",
+                    "financialInstitutionCode",
+                ], true);
+            case "NEQUI":
+                return validateFields(paymentMethod, [
+                    "phoneNumber",
+                ], validateStates(validations, [
+                    "phoneNumber",
+                ] ));
+            case "MEDDIPAY":
+                return validateFields(creditData, [
+                    "meddipayAuthorizationCode",
+                ], true);
+            default:
+                return true;
+        }
+    };
 
     useEffect(() => {
         // Lógica de botones según el paso y estado de registro
@@ -39,7 +77,10 @@ const useNavigationButton = (
                     "user.email",
                     "user.password",
                     "user.confirmPassword",
-                ], Object.values(validations).every(Boolean));
+                ], validateStates(validations, [
+                    "emailValid",
+                    "passwordMatch",
+                ]));
                 config.onClick = () => {
                     openModal("termCond", {
                         next: true,
@@ -66,13 +107,23 @@ const useNavigationButton = (
         // Paso 1
         if (currentStep === 1) {
             config.text = "Continuar";
-            config.disabled = !validateFields(registerData, [
-                "user.name1",
-                "user.lastName1",
-            ], false); // Validamos un objeto diferente
+            console.log('validate', validateByMethod(selectedMethod), 'credit', creditData.meddipayAuthorizationCode)
+            config.disabled = !(validateFields(purchaseData, [
+                "identification",
+                "typeId",
+                "names",
+                "lastNames",
+                "email",
+                "address",
+                "phone",
+                "departament",
+                "city"
+
+            ], validateStates(validations, ['emailValid']) ) && validateByMethod(selectedMethod) && selectedMethod);
+
+            console.log()
             config.onClick = () => {
-                console.log("Función Y ejecutada en paso 1");
-                setCurrentStep((prev) => prev + 1); // Continuamos al siguiente paso
+                handleNext();
             };
         }
 
@@ -97,6 +148,10 @@ const useNavigationButton = (
         setCurrentStep,
         registerData,
         validations,
+        purchaseData,
+        paymentMethod,
+        creditData
+
     ]);
 
     return buttonConfig;

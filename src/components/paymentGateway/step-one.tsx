@@ -38,7 +38,8 @@ const StepOne: React.FC = () => {
                             disabled={isRegistered}
                             options={typesId}
                             className={getInputClass(registerData.user, "typeId", "border-2 border-gray-300", "border-2 border-primary")}
-                            
+                            valueKey={"code"}
+                            labelKey={"description"}
                         />
 
                         <div className="flex flex-row space-x-2">

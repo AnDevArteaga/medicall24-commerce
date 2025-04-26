@@ -1,3 +1,5 @@
+import { Validations } from "../interfaces/validations.interface";
+
 interface Field {
     [key: string]: any;
 }
@@ -51,4 +53,8 @@ export const validateFields = (
 
     // Si todos los campos están completos, retornamos `true`
     return true;
+};
+// Función que valida si todas las claves en "campos" son verdaderas en el objeto de validaciones
+export const validateStates = (obj: Validations, campos: (keyof Validations)[]): boolean => {
+    return campos.every((campo) => obj[campo] === true);
 };

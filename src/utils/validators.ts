@@ -40,6 +40,8 @@ export const validateDomainEmail = (value: string) => {
   return true;
 };
 
+
+
 // Validar la longitud de caracteres (minimo y máximo)
 export const validateLength = (
   value: string,

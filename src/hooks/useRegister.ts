@@ -6,7 +6,6 @@ import {
     fetchTypeId,
     userRegister,
 } from "../services/azure/user";
-import { TypeId } from "../interfaces/types-id";
 import { validateEmail, validateDomainEmail } from "../utils/validators";
 import { togglePasswordVisibility, checkPasswordMatch } from "../utils/handle-password";
 import { setFieldError } from "../utils/forms";
@@ -16,11 +15,10 @@ import { resendActivationCode } from "../services/azure/user";
 
 
 export const useRegister = () => {
-    const { setIsRegistered, registerData, setRegisterData, setValidations, setStatusRegister, setErrors, errors } =
+    const { setIsRegistered, registerData, setRegisterData, setValidations, setStatusRegister, setErrors, errors, typesId, setTypesId } =
         usePurchaseContext();
     const { openModal, closeModal } = useModal();
     const [loading, setLoading] = useState(false);
-    const [typesId, setTypesId] = useState<TypeId[]>([]);
     
     // Estado para manejar la visibilidad de la contraseña
     const [showPassword, setShowPassword] = useState(false);
@@ -73,7 +71,7 @@ export const useRegister = () => {
         setLoading(true);
         try {
             const registerDataCopy = { ...registerData }; // Para evitar que se modifique directamente el estado
-            const response = await userRegister(registerDataCopy);
+            const response: any = await userRegister(registerDataCopy);
             if (response.status === 200 || response.status === 201) {
                 setIsRegistered(true);
                 setStatusRegister("success");

@@ -6,6 +6,7 @@ import useNavigationButton from "../../hooks/useButtonNavigationGateway";
 import Slider from "react-slick";
 
 const StepOne = lazy(() => import("./step-one"));
+const StepTwo = lazy(() => import("./step-two"));
 
 // Configuración de Slick Slider
 const settings = {
@@ -36,12 +37,7 @@ const PaginacionSlider: React.FC = () => {
                 ref={sliderRef}
             >
                 <StepOne />
-                <div className="flex justify-center items-center p-8 bg-gray-100 rounded-lg">
-                    <h3 className="text-xl font-semibold">Step 2: Details</h3>
-                    <p className="text-lg mt-4">
-                        Here are some important details.
-                    </p>
-                </div>
+                <StepTwo />
                 <div className="flex justify-center items-center p-8 bg-gray-100 rounded-lg">
                     <h3 className="text-xl font-semibold">
                         Step 3: Conclusion

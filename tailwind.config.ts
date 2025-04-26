@@ -13,6 +13,10 @@ const config: Config = {
           secondarydark: '#c0680b',   
           neutral: '#4e4e4e',   
         },
+        animation: {
+          "fade-in": "fadeIn 0.5s ease-in-out",
+          "fadeInOut": "fadeInOut 0.1s ease-in-out infinite",
+        },
         screens: {
           'xs': { 'max': '539px' },     // celulares pequeños
           'sm': { 'min': '540px', 'max': '768px' },     // móviles normales
