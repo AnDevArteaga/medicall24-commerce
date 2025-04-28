@@ -7,6 +7,7 @@ import { useRegister } from "../../hooks/useRegister";
 import {
     useSelectDataPurchase,
 } from "../../hooks/useSelectDataPurchase";
+import { useModal } from "../../contexts/modals";
 
 import visa from "../../assets/svg/visa.svg";
 import mastercard from "../../assets/svg/mastercard.svg";
@@ -40,6 +41,7 @@ const renderFormMethod = (method: string) => {
 };
 
 const StepTwo: React.FC = () => {
+    const { openModal } = useModal();
     const {
         errors,
         purchaseData,
@@ -235,11 +237,11 @@ const StepTwo: React.FC = () => {
 
                     {/* Fila 2 */}
                 </form>
-                <p className="text-sm mt-4">
+                <p className="text-xs mt-4">
                     <span className="text-red-600">*</span>{" "}
                     Campos obligatorios{" "}
                 </p>
-                <p className="text-sm text-gray-800 mt-4">
+                <p className="text-xs text-gray-800 mt-4">
                     ¿Necesitas factura?
                 </p>
 
@@ -250,10 +252,10 @@ const StepTwo: React.FC = () => {
                     </div>
 
                     {/* Texto descriptivo */}
-                    <p className="text-sm text-gray-700">
+                    <p className="text-xs text-gray-700">
                         Para solicitar documento tributario a nombre de quién
                         paga o compra,{" "}
-                        <span className="text-pink-600 underline cursor-pointer hover:text-pink-800 font-semibold" // onClick={openModal}
+                        <span className="text-primary underline cursor-pointer hover:text-primarydark font-semibold" onClick={() => openModal("billingData")}
                         >
                             click aquí
                         </span>

@@ -34,7 +34,7 @@ const InputCheck: React.FC<InputCheckProps> = (
             </div>
 
             {/* Etiqueta */}
-            <span className="ml-2 text-gray-700 text-sm">{label}</span>
+            <span className="ml-2 text-gray-700 text-xs">{label}</span>
         </label>
     );
 };

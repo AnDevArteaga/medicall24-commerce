@@ -18,18 +18,18 @@ export const Stepper = ({ currentStep }: { currentStep: number }) => {
                         key={step.id}
                         className={`flex items-center space-x-2.5 rtl:space-x-reverse ${
                             isCompleted
-                                ? "text-pink-600"
+                                ? "text-primary"
                                 : isActive
-                                ? "text-pink-600"
+                                ? "text-primary"
                                 : "text-gray-500 dark:text-gray-400"
                         }`}
                     >
                         <span
                             className={`flex items-center justify-center w-8 h-8 sm:w-6 sm:h-6 border rounded-full shrink-0 transition-all ${
                                 isCompleted
-                                    ? "bg-pink-600 border-pink-600"
+                                    ? "bg-primary border-primary"
                                     : isActive
-                                    ? "border-pink-600"
+                                    ? "border-primary"
                                     : "border-gray-500 dark:border-gray-400"
                             }
                 ${step.id === 0 ? "ml-4" : "ml-0"}`}
@@ -63,7 +63,7 @@ export const Stepper = ({ currentStep }: { currentStep: number }) => {
                             </h3>
                             {step.id === 0 && (
                                 <div className="ml-2 group relative flex">
-                                    <Info className="w-5 h-5 text-gray-500 hover:text-pink-600 cursor-pointer" />
+                                    <Info className="w-5 h-5 text-gray-500 hover:text-primary cursor-pointer" />
                                     <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 translate-y-[-5px] invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all bg-gray-800 text-white text-sm p-2 rounded-lg shadow-md w-96 sm:text-xs sm:w-48">
                                         <p className="mb-2">
                                             El usuario(a) beneficiario(a) del

@@ -12,6 +12,7 @@ interface SelectInputProps<T> {
     disabled?: boolean;
     onBlur?: React.FocusEventHandler<HTMLSelectElement>;
     className?: string;
+    selected?: string;
 }
 
 const SelectInput = <T extends object>({
@@ -26,6 +27,7 @@ const SelectInput = <T extends object>({
     disabled,
     onBlur,
     className,
+    selected,
 }: SelectInputProps<T>) => {
     return (
         <div className="mb-4">
@@ -43,7 +45,7 @@ const SelectInput = <T extends object>({
             >
                 <option value="">Selecciona</option>
                 {options.map((option, index) => (
-                    <option key={index} value={String(option[valueKey])}>
+                    <option key={index} value={String(option[valueKey])} selected={selected === String(option[valueKey])}>
                         {String(option[labelKey])}
                     </option>
                 ))}

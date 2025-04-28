@@ -29,3 +29,23 @@ export const listInstitutionsById = async (items: Ally[]): Promise<Ally[]> => {
         return items;
     }
 };
+
+
+export const listInstitutionsByIdComplete = async (id: number | string): Promise<InstitutionResponse> => {
+    try {
+        const response = await axios.get<InstitutionResponse>(
+            `${apiAzure}/Institutions/GetInstitution/${id}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${import.meta.env.VITE_AUTH_TOKEN}`,
+                },
+            },
+        );
+
+        return response.data;
+    } catch (error) {
+        console.error("Error loading institutions:", error);
+        throw new Error("No se pudo cargar la institución");
+    }
+
+}

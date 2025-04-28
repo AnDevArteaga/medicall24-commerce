@@ -8,7 +8,7 @@ interface DomainVerifiedProps {
 
 const DomaninVerified: React.FC<DomainVerifiedProps> = ({ onClose }) => {
   return (
-    <div className="fixed inset-0 bg-gray-600/50 flex justify-center items-center backdrop-blur-sm">
+    <div className="fixed inset-0 bg-gray-600/50 flex justify-center items-center backdrop-blur-sm z-50">
       <div className="bg-white rounded-lg shadow-lg w-1/2 sm:w-full md:max-w-md p-6 text-center">
         {/* Icono de Información */}
         <div className="flex justify-center mb-4">

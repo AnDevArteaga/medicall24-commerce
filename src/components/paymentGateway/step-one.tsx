@@ -22,6 +22,7 @@ const StepOne: React.FC = () => {
         handleValidateDomainEmail
     } = useRegister();
 
+
     return (
         <div className="bg-white rounded-lg p-6 w-full">
             <form className="space-y-4" autoComplete="off">

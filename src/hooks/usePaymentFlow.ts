@@ -25,7 +25,7 @@ type ActionsMap = {
 };
 
 export const usePaymentFlow = () => {
-    const { handleGetDetailPayment } = DetailPayment();
+    const { handleGetDetailPayment, handleSetterDetailPayment } = DetailPayment();
     const {
         paymentMethod,
         setGeneralPaymentData,
@@ -33,7 +33,7 @@ export const usePaymentFlow = () => {
         handleNext,
         selectedMethod,
     } = usePurchaseContext();
-    const { handleGenerateTransaction, handleCheckAsyncPaymentUrl, redirectToPaymentPage } = useGenerateTransaction();
+    const { handleGenerateTransaction, handleCheckAsyncPaymentUrl, redirectToPaymentPage, approvePaymentInmediately, setStartFetchingStatusPayment } = useGenerateTransaction();
 
     const actions: ActionsMap = {
         BANCOLOMBIA_TRANSFER: {
@@ -53,46 +53,79 @@ export const usePaymentFlow = () => {
                 const asyncPaymentUrl = await handleCheckAsyncPaymentUrl(transactionId);
                 redirectToPaymentPage(asyncPaymentUrl);
                 console.log("transactionId", transactionId);
+                setStartFetchingStatusPayment(true);
+                handleNext();
             },
         },
         CARD: {
             nextStepTwo: async () => {
-                console.log("Addi - continuar");
-                // lógica Addi continuar
+                console.log("nextStepTwo");
+                fillGeneralPaymentDataFromPurchaseAndPayment(
+                    purchaseData,
+                    paymentMethod,
+                    setGeneralPaymentData,
+                );
+                const detailPayment = await handleGetDetailPayment();
+                console.log("detailPayment", detailPayment);
+                handleNext();
             },
             paidStepThree: async () => {
-                console.log("Addi - pagar");
-                // lógica Addi pagar
+                const transactionId = await handleGenerateTransaction();
+                console.log("transactionId", transactionId);
+                setStartFetchingStatusPayment(true);
+                handleNext();
             },
         },
         PSE: {
             nextStepTwo: async () => {
-                console.log("Addi - continuar");
-                // lógica Addi continuar
+                console.log("nextStepTwo");
+                fillGeneralPaymentDataFromPurchaseAndPayment(
+                    purchaseData,
+                    paymentMethod,
+                    setGeneralPaymentData,
+                );
+                const detailPayment = await handleGetDetailPayment();
+                console.log("detailPayment", detailPayment);
+                handleNext();
             },
             paidStepThree: async () => {
-                console.log("Addi - pagar");
-                // lógica Addi pagar
+                const transactionId = await handleGenerateTransaction();
+                const asyncPaymentUrl = await handleCheckAsyncPaymentUrl(transactionId);
+                redirectToPaymentPage(asyncPaymentUrl);
+                console.log("transactionId", transactionId);
+                setStartFetchingStatusPayment(true);
+                handleNext();
             },
         },
         NEQUI: {
             nextStepTwo: async () => {
-                console.log("Addi - continuar");
-                // lógica Addi continuar
+                console.log("nextStepTwo");
+                fillGeneralPaymentDataFromPurchaseAndPayment(
+                    purchaseData,
+                    paymentMethod,
+                    setGeneralPaymentData,
+                );
+                const detailPayment = await handleGetDetailPayment();
+                console.log("detailPayment", detailPayment);
+                handleNext();
             },
             paidStepThree: async () => {
-                console.log("Addi - pagar");
-                // lógica Addi pagar
+                const transactionId = await handleGenerateTransaction();
+                console.log("transactionId", transactionId);
+                setStartFetchingStatusPayment(true);
+                handleNext();
             },
         },
         MEDDIPAY: {
             nextStepTwo: async () => {
-                console.log("MediPay - continuar");
-                // lógica MediPay continuar
+                handleSetterDetailPayment();
+                handleNext();
             },
             paidStepThree: async () => {
-                console.log("MediPay - pagar");
-                // lógica MediPay pagar
+                approvePaymentInmediately();
+                setTimeout(() => {
+                    handleNext();
+                },  1000);
             },
         },
     };

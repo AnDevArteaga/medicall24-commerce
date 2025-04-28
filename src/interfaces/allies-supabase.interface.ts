@@ -12,6 +12,8 @@ export interface Ally {
   }
 
 export interface InstitutionResponse {
+    address: string;
+    phone1: string;
     institution: {
       cover: string;
     };

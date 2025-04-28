@@ -55,6 +55,7 @@ export const useSelectDataPurchase = () => {
         setValidations,
         creditData,
         registerData,
+        currentStep
     } = usePurchaseContext();
     const [departments, setDepartments] = useState<Department[]>([]);
     const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
@@ -274,8 +275,10 @@ export const useSelectDataPurchase = () => {
     }, []);
 
     useEffect(() => {
-        handleGetMunicipalities();
-    }, [purchaseData.departament]);
+        if (currentStep === 1) {
+            handleGetMunicipalities();
+        }
+    }, [purchaseData.departament, currentStep]);
 
     return {
         handleSelectDataPurchase,

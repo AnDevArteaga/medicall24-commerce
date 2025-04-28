@@ -3,7 +3,7 @@ import { usePurchaseContext } from "../../contexts/checkout";
 import { formatNumber } from "../../utils/format";
 
 const StepThree: React.FC = () => {
-    const { product, detailPayment } = usePurchaseContext();
+    const { product, detailPayment, selectedMethod } = usePurchaseContext();
     const getProductName = () => {
         if (!product) return "Sin producto";
         return "nombre" in product ? product.nombre : product.producto;
@@ -27,12 +27,12 @@ const StepThree: React.FC = () => {
                     Método de Pago
                 </span>
                 <span className="text-gray-600">
-                    {detailPayment?.paymentMethod ===
+                    {selectedMethod ===
                             "BANCOLOMBIA_TRANSFER"
                         ? "Bancolombia"
-                        : detailPayment?.paymentMethod === "CARD"
+                        : selectedMethod === "CARD"
                         ? "Tarjeta"
-                        : detailPayment?.paymentMethod || "---"}
+                        : selectedMethod || "---"}
                 </span>
             </div>
 

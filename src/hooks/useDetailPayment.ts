@@ -6,7 +6,7 @@ import { getDetailPayment } from "../services/azure/payments";
 export const DetailPayment = () => {
     const [loading, setLoading] = useState(false);
 
-    const { generalPaymentData, selectedMethod, setDetailPayment } = usePurchaseContext();
+    const { generalPaymentData, selectedMethod, setDetailPayment, product } = usePurchaseContext();
     const handleGetDetailPayment = async () => {
         const { productId, discount } = generalPaymentData;
         console.log('productId', productId, 'discount', discount)
@@ -36,6 +36,18 @@ export const DetailPayment = () => {
         }
     };
 
+   const handleSetterDetailPayment = () => {
+       setDetailPayment({
+           paymentMethod: selectedMethod,
+           description: null,
+           valor: product!.valor_cop,
+           descuento: 0,
+           subtotal: product!.valor_cop,
+           iva: 0,
+           commission: 0,
+           total: product!.valor_cop,
+       });
+   }
 
-    return { loading, handleGetDetailPayment };
+    return { loading, handleGetDetailPayment, handleSetterDetailPayment };
 };

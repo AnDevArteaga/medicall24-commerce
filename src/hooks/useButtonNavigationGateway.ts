@@ -127,7 +127,7 @@ const useNavigationButton = (
 
             console.log()
             config.onClick = () => {
-                executeAction("nextStepTwo");
+                openModal("selectAllie");
             };
         }
 

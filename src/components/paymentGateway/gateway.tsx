@@ -8,6 +8,7 @@ import Slider from "react-slick";
 const StepOne = lazy(() => import("./step-one"));
 const StepTwo = lazy(() => import("./step-two"));
 const StepThree = lazy(() => import("./step-three"));
+const FinalStep = lazy(() => import("./final-step"));
 
 // Configuración de Slick Slider
 const settings = {
@@ -15,6 +16,8 @@ const settings = {
     speed: 500,
     draggable: false,
 };
+
+
 
 const PaginacionSlider: React.FC = () => {
         // Estado para el paso actual
@@ -37,13 +40,17 @@ const PaginacionSlider: React.FC = () => {
                 {...settings}
                 ref={sliderRef}
             >
+                
                 <StepOne />
                 <StepTwo />
                 <StepThree />
+                <FinalStep />
             </Slider>
 
             {/* Botones de navegación */}
             <div className="flex justify-between px-6">
+            {/* {currentStep !== 3 && ( */}
+                <>
                 <ButtonForm
                     onClick={handlePrevious}
                     disabled={currentStep === 0}
@@ -54,6 +61,9 @@ const PaginacionSlider: React.FC = () => {
                         disabled={disabled}
                         text={text}
                 />
+                                </>
+
+                {/* )} */}
             </div>
         </div>
     );

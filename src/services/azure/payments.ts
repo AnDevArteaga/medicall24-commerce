@@ -13,9 +13,11 @@ export const getDetailPayment = async (
     discount: number,
 ): Promise<detailsPayment> => {
     try {
+        const method = paymentMethod === "NEQUI" ? "PSE" : paymentMethod;
+
         const response = await axios.post(
             `${apiAzure}/Payments/GetDetailPayment`,
-            { productId, paymentMethod, discount },
+            { productId, paymentMethod: method, discount },
         );
         return response.data;
     } catch (error) {
@@ -140,3 +142,17 @@ export const checkAsyncPaymentUrl = async (
     );
     return null;
 };
+
+
+export const fetchPaymentStatus = async (transactionId: string) => {
+    try {
+        const response = await axios.get(
+            `${apiAzure}/Payments/GetStatusOrder/${transactionId}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching payment status:", error);
+        throw error;
+    }
+};
+

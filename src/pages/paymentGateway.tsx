@@ -6,9 +6,12 @@ import UserRegistered from "../components/modals/paymentGateway/stepOne/user-reg
 import TermCond from "../components/modals/term&cond/bexa/term-cond";
 import ConfirmData from "../components/modals/paymentGateway/stepOne/confirm-data";
 import NewUser from "../components/modals/paymentGateway/stepOne/new-user-register";
+import Billing from "../components/modals/paymentGateway/stepTwo/billing";
+import SelectAllie from "../components/modals/paymentGateway/stepTwo/select-allie";
 import { useModal } from "../contexts/modals";
 import { useGetProduct } from "../hooks/useGetProduct";
 import { usePurchaseContext } from "../contexts/checkout";
+
 
 const PaymentGateway: React.FC = () => {
     const { isModalOpen, closeModal, getModalProps } = useModal();
@@ -74,6 +77,14 @@ const PaymentGateway: React.FC = () => {
                     {isModalOpen("newUserRegister") && (
                         <NewUser
                             onClose={() => closeModal("newUserRegister")}
+                        />
+                    )}
+                    {isModalOpen("billingData") && (
+                        <Billing
+                        />
+                    )}
+                    {isModalOpen("selectAllie") && (
+                        <SelectAllie
                         />
                     )}
                 </>
