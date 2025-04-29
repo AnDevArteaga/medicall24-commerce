@@ -54,7 +54,10 @@ const Pse: React.FC = () => {
                     <div className="flex items-center justify-center">
                     <ButtonForm
                         onClick={handleValidtionAuthorizationCode}
-                        text={Loading ? "Validando..." : "Validar"}
+                        text="Validar"
+                        loading={Loading}
+                        colorLoading="text-white"
+                        widthLoading={20}
                     />
                     </div>
 

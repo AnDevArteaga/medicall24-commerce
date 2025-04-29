@@ -99,7 +99,7 @@ const Billing: React.FC = () => {
                             </div>
 
                             {/* Inputs */}
-                            <div className="flex flex-row items-center gap-2">
+                            <div className="flex flex-row items-center gap-2 justify-between">
                                 <InputText
                                     label="Número de Documento"
                                     name="numid_factura"
@@ -147,7 +147,7 @@ const Billing: React.FC = () => {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-3 sm:grid-cols-1 md:grid-cols-2 gap-2">
+                            <div className="grid grid-cols-2 sm:grid-cols-1 md:grid-cols-2 gap-2">
                                 <InputText
                                     label="País"
                                     name="pais_factura"
@@ -166,10 +166,10 @@ const Billing: React.FC = () => {
                                     errorMessage={null}
                                     type="text"
                                 />
-                                <InputText
+                                {/* <InputText
                                     label="Ciudad"
                                     name="ciudad_factura"
-                                    value={registerPurchase.ciudad_factura ||
+                                    value={
                                         ""}
                                     obligatory
                                     type="text"
@@ -181,7 +181,7 @@ const Billing: React.FC = () => {
                                         "border-2 border-primary",
                                     )}
                                     onChange={handleDataBilling}
-                                />
+                                /> */}
                                 <InputText
                                     label="Dirección"
                                     name="direccion_factura"
@@ -255,7 +255,6 @@ const Billing: React.FC = () => {
                             <ButtonForm
                                 disabled={!validateFields(registerPurchase, [
                                     "correo_factura",
-                                    "ciudad_factura",
                                     "pais_factura",
                                     "direccion_factura",
                                     "numid_factura",

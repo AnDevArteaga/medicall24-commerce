@@ -5,7 +5,6 @@ import { usePurchaseContext } from "../contexts/checkout";
 import { useModal } from "../contexts/modals";
 import { termBexaPackageContent } from "../components/modals/term&cond/bexa/content-terms";
 import { validateStates } from "../utils/validate-fields";
-import { usePaymentFlow } from "../hooks/usePaymentFlow";
 
 const useNavigationButton = (
     currentStep: number,
@@ -13,7 +12,6 @@ const useNavigationButton = (
     setCurrentStep: React.Dispatch<React.SetStateAction<number>>,
 ) => {
     const { validations, registerData, handleNext, purchaseData, paymentMethod, selectedMethod, creditData, generalPaymentData, detailPayment } = usePurchaseContext();
-    const { executeAction } = usePaymentFlow();
     const { openModal, closeModal } = useModal();
     const [buttonConfig, setButtonConfig] = useState({
         text: "",
@@ -28,12 +26,12 @@ const useNavigationButton = (
             
             case "CARD":
                 return validateFields(paymentMethod, [
-                    "number",
-                    "cardHolder",
-                    "expMonth",
-                    "expYear",
+                    "card.number",
+                    "card.cardHolder",
+                    "card.expMonth",
+                    "card.expYear",
                     "installments",
-                    "cvc",
+                    "card.cvc",
                 ], validateStates(validations, [
                     "cardNumber",
                 ] ));
@@ -133,7 +131,7 @@ const useNavigationButton = (
 
         // Paso 2
         if (currentStep === 2) {
-            config.text = "Pagar";
+            config.text = "Continuar";
             console.log(generalPaymentData)
             config.disabled = !validateFields(detailPayment, [
                 "paymentMethod",
@@ -144,7 +142,7 @@ const useNavigationButton = (
             ], 
              true);
             config.onClick = () => {
-                executeAction("paidStepThree");
+                openModal("verifiyEmail");
             };
         }
 

@@ -8,6 +8,8 @@ const Allies = lazy(() => import("../pages/allies"));
 const PeoplePlan = lazy(() => import("../pages/peoplePlan"))
 const Company = lazy(() => import("../pages/company"))
 const PaymentGateway = lazy(() => import("../pages/paymentGateway"))
+const CreditManager = lazy(() => import("../pages/creditManager"))
+const Login = lazy(() => import("../pages/login"))
 
 
 const routes: RouteObject[] = [
@@ -38,6 +40,14 @@ const routes: RouteObject[] = [
   {
     path: "/pagos",
     element: <PaymentGateway />
+  },
+  {
+    path: "/gestionar-creditos",
+    element: <CreditManager />
+  },
+  {
+    path: "/iniciar-sesion",
+    element: <Login />
   },
 ];
 

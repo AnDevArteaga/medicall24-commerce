@@ -71,7 +71,6 @@ export interface registerPurchase {
   direccion_factura: string,
   correo_factura: string,
   pais_factura: string,
-  ciudad_factura: string,
   num_factura: string,
   envio_factura: boolean,
   producto: string,

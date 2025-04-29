@@ -13,6 +13,7 @@ interface SelectInputProps<T> {
     onBlur?: React.FocusEventHandler<HTMLSelectElement>;
     className?: string;
     selected?: string;
+    loading?: boolean;
 }
 
 const SelectInput = <T extends object>({
@@ -28,6 +29,7 @@ const SelectInput = <T extends object>({
     onBlur,
     className,
     selected,
+    loading,
 }: SelectInputProps<T>) => {
     return (
         <div className="mb-4">
@@ -43,10 +45,10 @@ const SelectInput = <T extends object>({
                 onBlur={onBlur}
                 className={`w-full px-3 py-1.5 text-xs disabled:text-gray-900 rounded-lg focus:ring-1 focus:ring-primary focus:outline-none hover:shadow-md transition-all disabled:bg-gray-200 bg-white ${className}`}
             >
-                <option value="">Selecciona</option>
+              {name !== 'financialInstitutionCode' &&  <option value="">Selecciona</option>}
                 {options.map((option, index) => (
                     <option key={index} value={String(option[valueKey])} selected={selected === String(option[valueKey])}>
-                        {String(option[labelKey])}
+                        {loading ? 'Cargando' : String(option[labelKey])}
                     </option>
                 ))}
             </select>

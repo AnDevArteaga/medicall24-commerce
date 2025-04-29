@@ -32,6 +32,12 @@ export const useGetProduct = () => {
                 const code = await getCodeByPromo(codeId);
                 if (code && code !== null) {
                     finalProduct = code;
+                    setGeneralPaymentData(
+                        (prev) => ({
+                            ...prev,
+                            discount: code.procentaje_descuento_compra,
+                        }),
+                    );
                 } else {
                     setError("Código promocional no encontrado.");
                 }
@@ -52,6 +58,7 @@ export const useGetProduct = () => {
                     (prev) => ({
                         ...prev,
                         productId: finalProduct.id_producto,
+
                     }),
                 );
             }

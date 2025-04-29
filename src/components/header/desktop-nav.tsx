@@ -26,7 +26,7 @@ const DesktopNav: React.FC<Props> = ({
       <li>
         <a
           href="https://medicall24.com.co/entidades/"
-          className="transform transition duration-200 hover:scale-105 flex hover:font-semibold hover:text-pink-600"
+          className="transform transition duration-200 hover:scale-105 flex hover:font-semibold hover:text-primary"
           target="_blank"
         >
           Entidades de Salud
@@ -35,7 +35,7 @@ const DesktopNav: React.FC<Props> = ({
       <li>
         <a
           href="/empresas"
-          className="transform transition duration-200 hover:scale-105 flex hover:font-semibold hover:text-pink-600"
+          className="transform transition duration-200 hover:scale-105 flex hover:font-semibold hover:text-primary"
           target="_blank"
         >
           Empresas
@@ -49,7 +49,7 @@ const DesktopNav: React.FC<Props> = ({
         }`}
       >
         <ArrowDownFromLine
-          className="w-6 h-6 text-pink-600 transform transition duration-200 hover:scale-105 flex hover:font-semibold"
+          className="w-6 h-6 text-primary transform transition duration-200 hover:scale-105 flex hover:font-semibold"
           onClick={() => setIsCountryVisible(true)}
         />
       </li>

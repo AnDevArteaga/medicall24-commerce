@@ -41,7 +41,7 @@ export const listInstitutionsByIdComplete = async (id: number | string): Promise
                 },
             },
         );
-
+        console.log('response', response)
         return response.data;
     } catch (error) {
         console.error("Error loading institutions:", error);

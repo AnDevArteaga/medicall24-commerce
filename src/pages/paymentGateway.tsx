@@ -8,6 +8,8 @@ import ConfirmData from "../components/modals/paymentGateway/stepOne/confirm-dat
 import NewUser from "../components/modals/paymentGateway/stepOne/new-user-register";
 import Billing from "../components/modals/paymentGateway/stepTwo/billing";
 import SelectAllie from "../components/modals/paymentGateway/stepTwo/select-allie";
+import VerifiyEmail from "../components/modals/paymentGateway/stepThree/verifiy-email";
+import ErrorPurchase from "../components/modals/paymentGateway/stepThree/error";
 import { useModal } from "../contexts/modals";
 import { useGetProduct } from "../hooks/useGetProduct";
 import { usePurchaseContext } from "../contexts/checkout";
@@ -85,6 +87,14 @@ const PaymentGateway: React.FC = () => {
                     )}
                     {isModalOpen("selectAllie") && (
                         <SelectAllie
+                        />
+                    )}
+                    {isModalOpen("verifiyEmail") && (
+                        <VerifiyEmail
+                        />
+                    )}
+                    {isModalOpen("errorPurchase") && (
+                        <ErrorPurchase
                         />
                     )}
                 </>

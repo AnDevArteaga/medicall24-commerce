@@ -39,7 +39,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ label, menuItems }) => {
     return (
         <li className="relative group z-10" ref={dropdownRef}>
             <p
-                className="transform transition duration-200 hover:scale-105 flex hover:font-semibold text-center hover:text-pink-600 cursor-pointer"
+                className="transform transition duration-200 hover:scale-105 flex hover:font-semibold text-center hover:text-primary cursor-pointer"
                 onClick={handleClick}
             >
                 {label}
@@ -58,7 +58,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ label, menuItems }) => {
                         <li className="hover:bg-pink-100" key={index}>
                             <a
                                 href={item.href}
-                                className="block px-4 py-2 text-gray-700 text-sm hover:text-pink-600"
+                                className="block px-4 py-2 text-gray-700 text-sm hover:text-primary"
                                 target={item.target}
                                 rel={item.target === "_blank"
                                     ? "noopener noreferrer"

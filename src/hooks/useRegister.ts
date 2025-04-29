@@ -15,7 +15,7 @@ import { resendActivationCode } from "../services/azure/user";
 
 
 export const useRegister = () => {
-    const { setIsRegistered, registerData, setRegisterData, setValidations, setStatusRegister, setErrors, errors, typesId, setTypesId } =
+    const { setIsRegistered, registerData, setRegisterData, setValidations, setStatusRegister, setErrors, errors, typesId, setTypesId, setUserId } =
         usePurchaseContext();
     const { openModal, closeModal } = useModal();
     const [loading, setLoading] = useState(false);
@@ -41,6 +41,7 @@ export const useRegister = () => {
             );
             if (user) {
                 setIsRegistered(true);
+                setUserId(user.id)
                 openModal("userRegistered");
                 setRegisterData((prev) => ({
                     ...prev,
@@ -73,6 +74,7 @@ export const useRegister = () => {
             const registerDataCopy = { ...registerData }; // Para evitar que se modifique directamente el estado
             const response: any = await userRegister(registerDataCopy);
             if (response.status === 200 || response.status === 201) {
+                setUserId(response.data.id)
                 setIsRegistered(true);
                 setStatusRegister("success");
             await resendActivationCode(registerDataCopy.user.email);

@@ -89,7 +89,8 @@ export const payment = async (
         return transactionId;
     } catch (error) {
         console.error("Error en la compra:", error);
-        return error;
+        
+        return null;
     }
 };
 

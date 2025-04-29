@@ -37,3 +37,21 @@ export const fetchAlliesById = async (id: number): Promise<Ally> => {
         throw error;
     }
 };
+
+
+export const fetchAlliesByIdMunicipality = async (id: number): Promise<Ally> => {
+    const url = `${apiSupabase}/aliados_gestores?id_municipio=eq.${id}&select=*`;
+    try {
+        const response = await axios.get<Ally>(url, {
+            headers: {
+                apikey: import.meta.env.VITE_SUPABASE_CLIENT_ANON_KEY_API,
+                Authorization:
+                    import.meta.env.VITE_SUPABASE_CLIENT_ANON_KEY_AUTH,
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error al obtener el aliado:", error);
+        throw error;
+    }
+};

@@ -47,20 +47,30 @@ interface PurchaseContextProps {
   setRegisterPurchase: React.Dispatch<React.SetStateAction<registerPurchase>>;
   startFetchingStatusPayment: boolean;
   setStartFetchingStatusPayment: React.Dispatch<React.SetStateAction<boolean>>;
+  order: any;
+  setOrder: React.Dispatch<React.SetStateAction<any>>;
   message: string;
   setMessage: React.Dispatch<React.SetStateAction<string>>;
   status: OrderStatus;
   setStatus: React.Dispatch<React.SetStateAction<OrderStatus>>;
+  loading: boolean;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  userId: number;
+  setUserId: React.Dispatch<React.SetStateAction<number>>;
+  registerPurchaseSaved: boolean;
+  setRegisterPurchaseSaved: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const PurchaseContext = createContext<PurchaseContextProps | undefined>(undefined);
 
 export const PurchaseProvider = ({ children }:{ children: ReactNode }) => {
   
+  const [userId, setUserId] = useState<number>(0);
   const [product, setProduct] = useState<Product | CodeXProduct | null>(null);
   const [isRegistered, setIsRegistered] = useState(false); //Estado para controlar si el usuario ya se ha registrado
   const [isValidPaymentMethod, setIsValidPaymentMethod] = useState(true); //Estado para controlar el estado de los campos cuando el tipo de ID no es CC, y el metodo de pago es PSE
   const [typesId, setTypesId] = useState<TypeId[]>([]);
+  const  [loading, setLoading] = useState(false);
 
   const [statusRegister, setStatusRegister] = useState<string | null>(null); //Estado para controlar el estado del registro
   const [currentStep, setCurrentStep] = useState(0); //Estado para controlar el paso actual del Gateway
@@ -90,7 +100,9 @@ export const PurchaseProvider = ({ children }:{ children: ReactNode }) => {
   const [selectedMethod, setSelectedMethod] = useState<string>("");
 
   const [generalPaymentData, setGeneralPaymentData] = useState<CustomPaymentData>({ identification: "", typeId: "", names: "", lastNames: "", email: "", address: "", phone: "", discount: 0, productId: 0, paymentMethod: { card: { number: "", cvc: "", expMonth: "", expYear: "", cardHolder: "" }, financialInstitutionCode: "0", installments: "0", paymentDescription: "", phoneNumber: "", type: "", userLegalId: "", userLegalIdType: "", userType: "" } });
-  const [registerPurchase, setRegisterPurchase] = useState<registerPurchase>({ id_transaccion: "", id_usuario_medicall: 0, id_aliado: 0, id_producto: 0, id_cita_medicall: 0, id_codigo_promo: 0, id_gestor: 0, identificacion_comprador: "", nombre_comprador: "", email_comprador: "", direccion_comprador: "", telefono_comprador: "", ciudad_comprador: "", departamento_comprador: "", fecha_compra: "", metodo_pago: "", porcentaje_comision_gestor: 0, subtotal: 0, iva: 0, comision_transaccion: 0, total: 0, total_centavos: 0, fecha_pago: "", descripcion_compra: "", estado_transaccion: "", ip_transaccion: "", compra_cancelada: false, estado_cuenta: false, tipopersona_factura: 0, tipoid_factura: "", numid_factura: "", dv_factura: "", nombre_factura: "", direccion_factura: "", correo_factura: "", pais_factura: "COLOMBIA", ciudad_factura: "" ,num_factura: "", envio_factura: false, producto: "", nombre_institucion: "", telefono_institucio: "", direccion_institucion: "", ciudad_institucion: "", dpto_institucion: "", pais_institucion: "", link_ayuda: "", link_terminos: "", link_pasos: "" });
+  const [registerPurchase, setRegisterPurchase] = useState<registerPurchase>({ id_transaccion: "", id_usuario_medicall: 0, id_aliado: 0, id_producto: 0, id_cita_medicall: 0, id_codigo_promo: 0, id_gestor: 0, identificacion_comprador: "", nombre_comprador: "", email_comprador: "", direccion_comprador: "", telefono_comprador: "", ciudad_comprador: "", departamento_comprador: "", fecha_compra: "", metodo_pago: "", porcentaje_comision_gestor: 0, subtotal: 0, iva: 0, comision_transaccion: 0, total: 0, total_centavos: 0, fecha_pago: "", descripcion_compra: "", estado_transaccion: "", ip_transaccion: "", compra_cancelada: false, estado_cuenta: false, tipopersona_factura: 0, tipoid_factura: "", numid_factura: "", dv_factura: "", nombre_factura: "", direccion_factura: "", correo_factura: "", pais_factura: "COLOMBIA", num_factura: "", envio_factura: false, producto: "", nombre_institucion: "", telefono_institucio: "", direccion_institucion: "", ciudad_institucion: "", dpto_institucion: "", pais_institucion: "", link_ayuda: "", link_terminos: "", link_pasos: "" });
+  const [registerPurchaseSaved, setRegisterPurchaseSaved] = useState(false);
+
 
   const [detailPayment, setDetailPayment] = useState<detailsPayment>(
           {
@@ -104,6 +116,7 @@ export const PurchaseProvider = ({ children }:{ children: ReactNode }) => {
               total: 0,
           },
       );
+    const [order, setOrder] = useState({});
     const [startFetchingStatusPayment, setStartFetchingStatusPayment] = useState(false);
     const [message, setMessage] = useState("");
     const [status, setStatus] = useState<OrderStatus>(null);
@@ -147,7 +160,7 @@ export const PurchaseProvider = ({ children }:{ children: ReactNode }) => {
 
   
   return (
-    <PurchaseContext.Provider value={{ isRegistered, setIsRegistered, registerData, setRegisterData,  currentStep, setCurrentStep, validations, setValidations, handleNext, handlePrevious, sliderRef, statusRegister, setStatusRegister, errors, setErrors, purchaseData, setPurchaseData, paymentMethod, setPaymentMethod, isValidPaymentMethod, setIsValidPaymentMethod, selectedMethod, setSelectedMethod, creditData, setCreditData, typesId, setTypesId, product, setProduct, generalPaymentData, setGeneralPaymentData, detailPayment, setDetailPayment, registerPurchase, setRegisterPurchase, startFetchingStatusPayment, setStartFetchingStatusPayment, message, setMessage, status, setStatus }}>
+    <PurchaseContext.Provider value={{ isRegistered, setIsRegistered, registerData, setRegisterData,  currentStep, setCurrentStep, validations, setValidations, handleNext, handlePrevious, sliderRef, statusRegister, setStatusRegister, errors, setErrors, purchaseData, setPurchaseData, paymentMethod, setPaymentMethod, isValidPaymentMethod, setIsValidPaymentMethod, selectedMethod, setSelectedMethod, creditData, setCreditData, typesId, setTypesId, product, setProduct, generalPaymentData, setGeneralPaymentData, detailPayment, setDetailPayment, registerPurchase, setRegisterPurchase, startFetchingStatusPayment, setStartFetchingStatusPayment, message, setMessage, status, setStatus, loading, setLoading, order, setOrder, userId, setUserId, registerPurchaseSaved, setRegisterPurchaseSaved }}>
       {children}
     </PurchaseContext.Provider>
   );

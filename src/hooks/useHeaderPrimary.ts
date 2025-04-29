@@ -3,12 +3,12 @@ import { useState } from "react";
 export const useHeaderPrimary = () => {
   const menuItemsPersonas = [
     {
-      href: "/Consulta-Paciente",
+      href: "/buscar-médico",
       label: "¿Cómo encontrar un médico?",
       target: "_blank",
     },
     {
-      href: "/Examen-Bexa",
+      href: "/bexa",
       label: "Examen BEXA",
       target: "_blank",
     },

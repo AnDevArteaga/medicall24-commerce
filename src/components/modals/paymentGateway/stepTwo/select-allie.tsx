@@ -1,14 +1,18 @@
 import React from 'react'
 import SelectInput from '../../../ui/select-map'
+import ButtonForm from '../../../ui/button-forms';
 import { useSelectAllie } from '../../../../hooks/useSelectAllie';
 import { getInputClass } from '../../../../utils/forms';
 import { usePurchaseContext } from '../../../../contexts/checkout';
 import { useModal } from '../../../../contexts/modals';
+import { validateFields } from '../../../../utils/validate-fields';
+import { usePaymentFlow } from '../../../../hooks/usePaymentFlow';
 
 const SelectAllie: React.FC = () => {
-    const { loadingAliado, selectsDisabled, departments, municipalities, handleSelectChange } = useSelectAllie();
-    const { registerPurchase } = usePurchaseContext();
+    const { loadingAliado, selectsDisabled, departments, municipalities, handleSelectChange, allyProvider, selectedValues } = useSelectAllie();
+    const { registerPurchase, loading } = usePurchaseContext();
     const { closeModal } = useModal();
+    const { executeAction } = usePaymentFlow();
   return (
     <div className="flex items-center justify-center h-auto">
 
@@ -29,11 +33,11 @@ const SelectAllie: React.FC = () => {
                 atendido:
               </p>
               <div className="flex flex-col justify-around bg-white">
-                <div className="flex flex-row">
+                <div className="grid grid-cols-3 gap-4">
                     <SelectInput 
                         label="Departamento"
                         name="dpto_institucion"
-                        value={registerPurchase.dpto_institucion}
+                        value={selectedValues.dpto_institucion}
                         obligatory
                         options={departments}
                         onChange={handleSelectChange}
@@ -46,11 +50,12 @@ const SelectAllie: React.FC = () => {
                             "border-2 border-primary",
                         )}
                         disabled={selectsDisabled}
+                        loading={loadingAliado}
                     />
                     <SelectInput 
                         label="Municipio"
                         name="ciudad_institucion"
-                        value={registerPurchase.ciudad_institucion}
+                        value={selectedValues.ciudad_institucion}
                         obligatory
                         options={municipalities}
                         onChange={handleSelectChange}
@@ -63,13 +68,14 @@ const SelectAllie: React.FC = () => {
                             "border-2 border-primary",
                         )}
                         disabled={selectsDisabled}
+                        loading={loadingAliado}
                     />
                     <SelectInput 
                         label="Prestador"
                         name="nombre_institucion"
-                        value={registerPurchase.nombre_institucion}
+                        value={selectedValues.nombre_institucion}
                         obligatory
-                        options={[]}
+                        options={allyProvider || []}
                         onChange={handleSelectChange}
                         valueKey="id"
                         labelKey="nombre"
@@ -80,6 +86,7 @@ const SelectAllie: React.FC = () => {
                             "border-2 border-primary",
                         )}
                         disabled={selectsDisabled}
+                        loading={loadingAliado}
                     />
                 </div>
               </div>
@@ -124,20 +131,18 @@ const SelectAllie: React.FC = () => {
 
             {/* Footer con botones */}
             <div className="px-6 py-4 flex justify-between space-x-4 bg-gray-100 rounded-b-lg">
-              <button
-                onClick={() => closeModal("selectAllie")}
-                className="px-4 py-2 text-white bg-primary rounded-lg hover:bg-pink-700 transition-all"
-              >
-                Cancelar
-              </button>
-              <button
-                // disabled={!accept}
-                className="px-4 py-2 text-white bg-primary rounded-lg hover:bg-pink-700 disabled:bg-gray-300 disabled:text-gray-700 transition-all"
-                // onClick={handleNext}
-                // disabled={!validate}
-              >
-                {/* {loading ? <Loader /> : "Continuar"} */}a
-              </button>
+                            <ButtonForm
+                                onClick={() => closeModal("selectAllie")}
+                                text='Cancelar' />
+
+                                <ButtonForm 
+                                    onClick={() => executeAction("nextStepTwo")}
+                                    text='Continuar'
+                                    disabled={!validateFields(registerPurchase, ["dpto_institucion", "ciudad_institucion", "nombre_institucion", "telefono_institucio", "direccion_institucion"], true)}
+                                    loading={loading}
+                                    colorLoading="text-white"
+                                    widthLoading={20}
+                                   />
             </div>
           </div>
         </div>

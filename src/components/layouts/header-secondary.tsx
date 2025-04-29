@@ -11,7 +11,7 @@ const HeaderSecondary: React.FC = () => {
   const label = isOnAliados ? "Volver" : "Inicio";
 
   return (
-    <header className="bg-gray-100 text-white shadow-md">
+    <header className="bg-gray-100 text-white shadow-md z-50">
       <div className="container mx-auto flex justify-between items-center py-4 px-4">
         {/* Logo */}
         <div className="flex items-center">
@@ -25,7 +25,7 @@ const HeaderSecondary: React.FC = () => {
         {/* Navegación */}
         <nav>
           <ul className="flex space-x-6">
-            <li className="hover:text-orange-500 text-pink-600 transition-colors">
+            <li className="hover:text-orange-500 text-primary transition-colors">
               <a href={href} className="flex items-center space-x-1">
                 {icon}
                 <span className="font-medium">{label}</span>

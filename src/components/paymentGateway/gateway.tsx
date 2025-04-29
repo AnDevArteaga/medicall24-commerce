@@ -5,6 +5,7 @@ import { usePurchaseContext } from "../../contexts/checkout";
 import useNavigationButton from "../../hooks/useButtonNavigationGateway";
 import Slider from "react-slick";
 
+
 const StepOne = lazy(() => import("./step-one"));
 const StepTwo = lazy(() => import("./step-two"));
 const StepThree = lazy(() => import("./step-three"));

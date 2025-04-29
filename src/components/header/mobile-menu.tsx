@@ -110,12 +110,12 @@ const MobileMenu: React.FC<Props> = ({
             {dropdownOpen && (
               <ul className="mt-2 pl-4 space-y-2">
                 <li>
-                  <a href="/Consulta-Paciente" className="block text-gray-600 hover:text-pink-400 text-lg">
+                  <a href="/buscar-médico" className="block text-gray-600 hover:text-pink-400 text-lg">
                     ¿Cómo encontrar un médico?
                   </a>
                 </li>
                 <li>
-                  <a href="/Examen-Bexa" className="block text-gray-600 hover:text-pink-400 text-lg">
+                  <a href="/bexa" className="block text-gray-600 hover:text-pink-400 text-lg">
                     Examen BEXA
                   </a>
                 </li>

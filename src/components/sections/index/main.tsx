@@ -47,7 +47,7 @@ const Principal = () => {
                 </p>
 
                 <ButtonSecondary link="/prueba" color="bg-secondary" text="Pide una consulta gratis" />
-                <ButtonSecondary link="/Consulta-Paciente" color="bg-primary" text="Mira el paso a paso" />
+                <ButtonSecondary link="/buscar-médico" color="bg-primary" text="Mira el paso a paso" />
 
                 {/* Logos de tiendas */}
                 <div className="flex justify-between items-center w-full max-w-md bg-white py-8 px-4 rounded-b-xl">

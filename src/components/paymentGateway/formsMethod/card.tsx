@@ -33,7 +33,6 @@ const Card: React.FC = () => {
                 <InputText
                     type="text"
                     name="cardHolder"
-                    maxLength={16}
                     onChange={handleSelectPaymentMethod}
                     value={paymentMethod.card.cardHolder || ""}
                     autoComplete="off"

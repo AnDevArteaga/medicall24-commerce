@@ -109,57 +109,69 @@ export const useSelectDataPurchase = () => {
     };
 
     const handleSelectPaymentMethod = (
-        e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>,
+        e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
     ) => {
         const { name, value } = e.target;
-        let newValue;
+    
+        // Asegúrate de limpiar errores antes de validar de nuevo
+        setFieldError(name, null, setErrors);
+    
+        // Actualizar el valor según el campo
+        let newValue = value;
+    
+        // Validación específica para el número de tarjeta y teléfono
+        if (name === "number" || name === "phoneNumber") {
+            newValue = value.replace(/[^0-9]/g, ""); // Solo permitir números
+        }
+    
+        // Validaciones específicas
         if (name === "number") {
-            newValue = value.replace(/[^0-9]/g, "");
-            const numberValidation = validateLength(newValue, 16, 16);
-            if (!numberValidation) {
-                setFieldError(
-                    name,
-                    "El número de tarjeta no es válido",
-                    setErrors,
-                );
+            const isValidCardNumber = validateLength(newValue, 16, 16);
+            if (!isValidCardNumber) {
+                setFieldError(name, "El número de tarjeta no es válido", setErrors);
                 setValidations((prev) => ({
                     ...prev,
                     cardNumber: false,
                 }));
             } else {
-                setFieldError(name, null, setErrors); // Limpiar el error si el número de tarjeta es válido
+                setFieldError(name, null, setErrors);
                 setValidations((prev) => ({
                     ...prev,
                     cardNumber: true,
                 }));
-            }
-        } else if (name === "phoneNumber") {
-            newValue = value.replace(/[^0-9]/g, "");
-            const phoneValidation = validateLength(newValue, 10, 10);
-            if (!phoneValidation) {
-                setFieldError(
-                    name,
-                    "El número de teléfono no es válido",
-                    setErrors,
-                );
+            }}
+        if (name === "phoneNumber") {
+            const isValidPhone = validateLength(newValue, 10, 10);
+            if (!isValidPhone) {
+                setFieldError(name, "El número de teléfono no es válido", setErrors);
                 setValidations((prev) => ({
                     ...prev,
                     phoneNumber: false,
                 }));
-            } else {
-                setFieldError(name, null, setErrors); // Limpiar el error si el número de teléfono es válido
+            }  else {
+                setFieldError(name, null, setErrors);
                 setValidations((prev) => ({
                     ...prev,
                     phoneNumber: true,
                 }));
-            }
+        } }
+    
+        const cardFields = ["number", "cvc", "expMonth", "expYear", "cardHolder"];
+
+        if (cardFields.includes(name)) {
+            setPaymentMethod((prev) => ({
+                ...prev,
+                card: {
+                    ...prev.card,
+                    [name]: newValue,
+                },
+            }));
         } else {
-            newValue = value;
+            setPaymentMethod((prev) => ({
+                ...prev,
+                [name]: newValue,
+            }));
         }
-        setPaymentMethod((prev) => ({
-            ...prev,
-            [name]: newValue,
-        }));
     };
 
     const handleSelectDataCredit = (
@@ -184,8 +196,8 @@ export const useSelectDataPurchase = () => {
                 expYear: "",
                 cardHolder: "",
             },
-            financialInstitutionCode: "0",
-            installments: "0",
+            financialInstitutionCode: "",
+            installments: "",
             paymentDescription: "Compra de Producto de Telemedicina",
             phoneNumber: "",
             userLegalId: "",
@@ -208,6 +220,7 @@ export const useSelectDataPurchase = () => {
             phoneNumber: false,
             meddipayAuthorizationCode: false,
         }));
+        
     };
 
     const handleGetDepartments = async () => {
