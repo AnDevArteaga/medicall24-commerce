@@ -15,6 +15,7 @@ import { useModal } from "../contexts/modals";
 import { usePromoQueryEffect } from "../hooks/useQrBexa";
 import { useSearchParams } from "react-router-dom";
 import { useAllies } from "../hooks/useAllies";
+import { usePurchaseContext } from "../contexts/checkout";
 
 const Bexa: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -31,10 +32,12 @@ const Bexa: React.FC = () => {
     });
     const { allies, handleSelectAlly } = useAllies();
     const termCondProps = getModalProps("termCond");
+    const { setQueryParam } = usePurchaseContext();
 
-    const abrirModalConProducto = (id_producto: number) => {
+    const openModalProduct = (id_producto: number) => {
         if (!productos) return;
         seleccionarProducto(id_producto, productos);
+        setQueryParam({ id_producto: id_producto.toString(), code: "" });
         openModal("producto");
     };
 
@@ -51,8 +54,8 @@ const Bexa: React.FC = () => {
     return (
         <Layout title="Medicall24 | Examen Bexa">
             <main className="flex flex-col min-h-screen">
-                <BexaExam onVerProducto={abrirModalConProducto} />
-                <BexaPackage onVerProducto={abrirModalConProducto} />
+                <BexaExam onVerProducto={openModalProduct} />
+                <BexaPackage onVerProducto={openModalProduct} />
                 <Allies items={allies} onSelect={handleSelectAlly} />
                 <Testimonials />
             </main>

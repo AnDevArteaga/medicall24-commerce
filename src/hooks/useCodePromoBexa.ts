@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { CodeXProduct } from "../interfaces/product.interface";
 import { useModal } from "../contexts/modals";
+import { usePurchaseContext } from "../contexts/checkout";
 
 export const useCodePromo = (
     idProduct: number,
@@ -15,6 +16,7 @@ export const useCodePromo = (
     const [discountValue, setDiscountValue] = useState<number>(0);
     const [totalWithDiscount, setTotalWithDiscount] = useState<number>(valor_cop);
     const { openModal } = useModal();
+    const { setQueryParam } = usePurchaseContext();
 
 
     useEffect(() => {
@@ -37,12 +39,12 @@ export const useCodePromo = (
             const percentaje = codeAplicabble.procentaje_descuento_compra ?? 0;
             const valorDescuento = Math.floor((valor_cop * percentaje) / 100);
             const totalFinal = valor_cop - valorDescuento;
-      
             setCodeValid(true);
             setCodeFounded(codeAplicabble);
             setDiscount(percentaje);
             setDiscountValue(valorDescuento);
             setTotalWithDiscount(totalFinal);
+            setQueryParam({ id_producto: idProduct.toString(), code: codeAplicabble.cod_promo });
         } else {
             resetCodigo();
             openModal("codeInvalid");
@@ -55,6 +57,7 @@ export const useCodePromo = (
         setDiscount(0);
         setDiscountValue(0);
         setTotalWithDiscount(valor_cop);
+        setQueryParam({ id_producto: "", code: "" });
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

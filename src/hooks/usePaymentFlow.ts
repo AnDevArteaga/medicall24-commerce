@@ -13,6 +13,8 @@ import { useGenerateTransaction } from "../hooks/useGenerateTransaction";
 import { useModal } from "../contexts/modals";
 import { getProductLinks } from "../hooks/useSelectDataEmail";
 import { useSavePurchaseData } from "./useSavePurchaseData";
+import { updateAuthorizationData } from "../services/supabase/manage-credit";
+
 
 type ButtonId = "nextStepTwo" | "paidStepThree" | "confirmar" | string;
 type PaymentMethod =
@@ -47,6 +49,7 @@ export const usePaymentFlow = () => {
         detailPayment,
         product,
         userId,
+        creditData
     } = usePurchaseContext();
     const {
         handleGenerateTransaction,
@@ -214,6 +217,7 @@ export const usePaymentFlow = () => {
                 );
                 console.log("registerPruchase", registerPruchase);
                 await savePurchase(registerPruchase);
+                await updateAuthorizationData(creditData.meddipayAuthorizationCode);
                 setTimeout(() => {
                     handleNext();
                 }, 1000);

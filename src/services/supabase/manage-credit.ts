@@ -22,7 +22,7 @@ export const registerAuthorizationData = async (formData: FormData): Promise<num
             }
         );
         if (response.status === 201 || response.status === 200) {
-            toast.success("Data saved successfully");
+            toast.success("Guardado correctamente");
         }
 
         console.log("response", response);
@@ -46,7 +46,7 @@ export const getAuthorizationData = async () => {
             }
         );
         if (response.status === 201 || response.status === 200) {
-            toast.success("Data retrieved successfully");
+            toast.success("Datos actualizados correctamente");
         }
         return response;
     } catch (error) {
@@ -56,3 +56,29 @@ export const getAuthorizationData = async () => {
 };
 
 
+export const updateAuthorizationData = async (code: string) => {
+    try {
+        const response = await axios.patch(
+            `${apiSupabase}/registro_usuario_credito?codigo_credito=eq.${code}`,
+            { validado: true },
+            {
+                headers: {
+                    apikey: import.meta.env.VITE_SUPABASE_CLIENT_ANON_KEY_API,
+                    Authorization: import.meta.env.VITE_SUPABASE_CLIENT_ANON_KEY_AUTH,
+                    "Content-Type": "application/json",
+                    Prefer: "return=minimal",
+                },
+            }
+        );
+
+        if (response.status === 200 || response.status === 204) {
+            toast.success("Guardado correctamente");
+        }
+
+        console.log("response", response);
+        return response.status;
+    } catch (error) {
+        console.error("Error updating data:", error);
+        toast.error("Error guardando datos");
+    }
+};

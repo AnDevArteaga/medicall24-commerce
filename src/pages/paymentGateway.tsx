@@ -13,12 +13,14 @@ import ErrorPurchase from "../components/modals/paymentGateway/stepThree/error";
 import { useModal } from "../contexts/modals";
 import { useGetProduct } from "../hooks/useGetProduct";
 import { usePurchaseContext } from "../contexts/checkout";
+import { useBeforeUnload } from "../hooks/useBeforeUnload";
 
 
 const PaymentGateway: React.FC = () => {
     const { isModalOpen, closeModal, getModalProps } = useModal();
     const termCondProps = getModalProps("termCond");
     const { product } = usePurchaseContext();
+    const  setIsDirty  = useBeforeUnload();
 
     // Estado para controlar el flujo de carga
     const { loading, error } = useGetProduct();
@@ -57,7 +59,7 @@ const PaymentGateway: React.FC = () => {
             {/* Solo mostramos el flujo principal cuando no hay errores y el producto está disponible */}
             {!loading && !error && isProductValid && (
                 <>
-                    <main>
+                    <main onChange={() => setIsDirty(true)}>
                         <Gateway />
                     </main>
 

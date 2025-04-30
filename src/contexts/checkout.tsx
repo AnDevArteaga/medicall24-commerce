@@ -5,7 +5,7 @@ import { Validations } from '../interfaces/validations.interface';
 import { buildFullName } from '../utils/forms';
 import Slider from "react-slick";
 import { TypeId } from '../interfaces/types-id';
-import { Product, CodeXProduct } from '../interfaces/product.interface';
+import { Product, CodeXProduct, queryParamsProduct } from '../interfaces/product.interface';
 import { OrderStatus } from '../types/status';
 
 
@@ -59,6 +59,8 @@ interface PurchaseContextProps {
   setUserId: React.Dispatch<React.SetStateAction<number>>;
   registerPurchaseSaved: boolean;
   setRegisterPurchaseSaved: React.Dispatch<React.SetStateAction<boolean>>;
+  queryParam: queryParamsProduct
+  setQueryParam: React.Dispatch<React.SetStateAction<queryParamsProduct>>
 }
 
 const PurchaseContext = createContext<PurchaseContextProps | undefined>(undefined);
@@ -67,6 +69,7 @@ export const PurchaseProvider = ({ children }:{ children: ReactNode }) => {
   
   const [userId, setUserId] = useState<number>(0);
   const [product, setProduct] = useState<Product | CodeXProduct | null>(null);
+  const [queryParam, setQueryParam] = useState<queryParamsProduct>({ id_producto: "", code: "" });
   const [isRegistered, setIsRegistered] = useState(false); //Estado para controlar si el usuario ya se ha registrado
   const [isValidPaymentMethod, setIsValidPaymentMethod] = useState(true); //Estado para controlar el estado de los campos cuando el tipo de ID no es CC, y el metodo de pago es PSE
   const [typesId, setTypesId] = useState<TypeId[]>([]);
@@ -160,7 +163,7 @@ export const PurchaseProvider = ({ children }:{ children: ReactNode }) => {
 
   
   return (
-    <PurchaseContext.Provider value={{ isRegistered, setIsRegistered, registerData, setRegisterData,  currentStep, setCurrentStep, validations, setValidations, handleNext, handlePrevious, sliderRef, statusRegister, setStatusRegister, errors, setErrors, purchaseData, setPurchaseData, paymentMethod, setPaymentMethod, isValidPaymentMethod, setIsValidPaymentMethod, selectedMethod, setSelectedMethod, creditData, setCreditData, typesId, setTypesId, product, setProduct, generalPaymentData, setGeneralPaymentData, detailPayment, setDetailPayment, registerPurchase, setRegisterPurchase, startFetchingStatusPayment, setStartFetchingStatusPayment, message, setMessage, status, setStatus, loading, setLoading, order, setOrder, userId, setUserId, registerPurchaseSaved, setRegisterPurchaseSaved }}>
+    <PurchaseContext.Provider value={{ isRegistered, setIsRegistered, registerData, setRegisterData,  currentStep, setCurrentStep, validations, setValidations, handleNext, handlePrevious, sliderRef, statusRegister, setStatusRegister, errors, setErrors, purchaseData, setPurchaseData, paymentMethod, setPaymentMethod, isValidPaymentMethod, setIsValidPaymentMethod, selectedMethod, setSelectedMethod, creditData, setCreditData, typesId, setTypesId, product, setProduct, generalPaymentData, setGeneralPaymentData, detailPayment, setDetailPayment, registerPurchase, setRegisterPurchase, startFetchingStatusPayment, setStartFetchingStatusPayment, message, setMessage, status, setStatus, loading, setLoading, order, setOrder, userId, setUserId, registerPurchaseSaved, setRegisterPurchaseSaved, queryParam, setQueryParam }}>
       {children}
     </PurchaseContext.Provider>
   );

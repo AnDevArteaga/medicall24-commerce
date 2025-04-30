@@ -50,7 +50,7 @@ const PaginacionSlider: React.FC = () => {
 
             {/* Botones de navegación */}
             <div className="flex justify-between px-6">
-            {/* {currentStep !== 3 && ( */}
+            {currentStep !== 3 && (
                 <>
                 <ButtonForm
                     onClick={handlePrevious}
@@ -64,7 +64,7 @@ const PaginacionSlider: React.FC = () => {
                 />
                                 </>
 
-                {/* )} */}
+                )} 
             </div>
         </div>
     );

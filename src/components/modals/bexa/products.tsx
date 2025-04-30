@@ -5,6 +5,8 @@ import { CheckCircle } from "lucide-react";
 import ButtonForm from "../../ui/button-forms";
 import { useModal } from "../../../contexts/modals";
 import { termBexaContent, termBexaPackageContent } from "../term&cond/bexa/content-terms";
+import { redirectPaid } from "../../../utils/redirect-paid";
+import { usePurchaseContext } from "../../../contexts/checkout";
 
 interface ModalProductoProps {
     codeXProduct: CodeXProduct[];
@@ -30,6 +32,7 @@ const ModalProducto: React.FC<ModalProductoProps> = (
         producto.valor_cop,
         codigoInicial,
     );
+    const { queryParam } = usePurchaseContext();
 
     const { openModal, closeModal } = useModal();
 
@@ -41,13 +44,20 @@ const ModalProducto: React.FC<ModalProductoProps> = (
                 onClose: () => closeModal("termCond"),
                 content: termBexaPackageContent,
                 headerTitle: "Términos y Condiciones del Servicio",
-            });
+                onClick: () =>{redirectPaid(queryParam); 
+                    closeModal("termCond");
+                }
+});
         } else {
+            console.log("queryParam", queryParam);
             openModal("termCond", {
                 next: true,
                 onClose: () => closeModal("termCond"),
                 content: termBexaContent,
                 headerTitle: "Términos y Condiciones del Servicio",
+                onClick: () =>  {redirectPaid(queryParam); 
+                                closeModal("termCond");
+                            }
             });
         }
     }

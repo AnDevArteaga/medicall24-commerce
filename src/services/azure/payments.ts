@@ -50,7 +50,7 @@ export const validateCodeAuthorization = async (
             (item: CreditUser) =>
                 item.codigo_credito === authorizationCode &&
                 item.identificacion_usuario === id &&
-                item.validado === true,
+                item.validado === false,
         );
         return isValid;
     } catch (error) {

@@ -24,3 +24,8 @@ export interface CodeXProduct {
 
   }
 
+export interface queryParamsProduct {
+  id_producto: string;
+  code?: string;
+}
+
