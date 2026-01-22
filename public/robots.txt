@@ -1,0 +1,28 @@
+# Robots.txt para Medicall24
+User-agent: *
+Allow: /
+Disallow: /pagos
+Disallow: /gestionar-creditos
+Disallow: /iniciar-sesion
+Disallow: /prueba
+Disallow: /terminos-y-condiciones/
+
+# Sitemap
+Sitemap: https://medicall24.com.co/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
+
+# Bots específicos
+User-agent: Googlebot
+Allow: /
+Disallow: /pagos
+Disallow: /gestionar-creditos
+Disallow: /iniciar-sesion
+
+User-agent: Bingbot
+Allow: /
+Disallow: /pagos
+Disallow: /gestionar-creditos
+Disallow: /iniciar-sesion
+

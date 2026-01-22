@@ -1,0 +1,345 @@
+//Hook para obtener los datos de la compra, y el metodo de pago, del paso dos del Gateway
+import { usePurchaseContext } from "../contexts/checkout";
+import { useEffect, useState } from "react";
+import { getDepartments, getMunicipalities } from "../services/azure/location";
+import { Department, Municipality } from "../interfaces/location.interfaces";
+import { loadBankPse } from "../services/azure/banks";
+import { BankPse } from "../interfaces/checkout.interfase";
+import { validateEmail, validateLength } from "../utils/validators";
+import { setFieldError } from "../utils/forms";
+import { validateCodeAuthorization } from "../services/azure/payments";
+
+const methods = [
+    {
+        id: "CARD",
+        label: "Tarjeta de crédito\no débito",
+        activeColor: "bg-white border-2 border-pink-600",
+        textColor: "text-gray-700",
+    },
+    {
+        id: "PSE",
+        label: "PSE",
+        activeColor: "bg-white border-2 border-pink-600",
+        textColor: "text-gray-700",
+    },
+    {
+        id: "BANCOLOMBIA_TRANSFER",
+        label: "Bancolombia",
+        activeColor: "bg-white border-2 border-pink-600",
+        textColor: "text-gray-700",
+    },
+    {
+        id: "NEQUI",
+        label: "Nequi",
+        activeColor: "bg-white border-2 border-pink-600 ",
+        textColor: "text-gray-700",
+    },
+    {
+        id: "MEDDIPAY",
+        label: "Meddipay",
+        activeColor: "bg-white border-2 border-pink-600 ",
+        textColor: "text-gray-700",
+    },
+];
+
+export const useSelectDataPurchase = () => {
+    const {
+        purchaseData,
+        paymentMethod,
+        setPurchaseData,
+        setPaymentMethod,
+        setIsValidPaymentMethod,
+        setSelectedMethod,
+        setCreditData,
+        setErrors,
+        setValidations,
+        creditData,
+        registerData,
+        currentStep,
+        isBuyerPatient
+    } = usePurchaseContext();
+    const [departments, setDepartments] = useState<Department[]>([]);
+    const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
+    const [banksPse, setBanksPse] = useState<BankPse[]>([]);
+    const [Loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (!isBuyerPatient) {
+            // Caso 1
+            setIsValidPaymentMethod(false);
+            return;
+        }
+    
+        if (
+            isBuyerPatient &&
+            paymentMethod.type === "PSE" &&
+            purchaseData.typeId !== "CC"
+        ) {
+            // Caso 2
+            setIsValidPaymentMethod(false);
+            return;
+        }
+    
+        // Caso 3
+        setIsValidPaymentMethod(true);
+    
+    }, [isBuyerPatient, paymentMethod, purchaseData.typeId, setIsValidPaymentMethod])
+
+
+    const handleSelectDataPurchase = (
+        e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>,
+    ) => {
+        const { name, value } = e.target;
+        let newValue;
+        if (name === "identification" || name === "phone") {
+            newValue = value.replace(/[^0-9]/g, "");
+        } else {
+            newValue = value;
+        }
+        if (name === "email") {
+            const emailValidation = validateEmail(value);
+            console.log(emailValidation);
+            if (!emailValidation) {
+                setFieldError(
+                    name,
+                    "El correo electrónico no es válido",
+                    setErrors,
+                );
+                setValidations((prev) => ({
+                    ...prev,
+                    emailValid: false,
+                }));
+            } else {
+                setFieldError(name, null, setErrors); // Limpiar el error si el correo electrónico es válido
+                setValidations((prev) => ({
+                    ...prev,
+                    emailValid: true,
+                }));
+            }
+        }
+
+        setPurchaseData((prev) => ({
+            ...prev,
+            [name]: newValue,
+        }));
+    };
+
+    const handleSelectPaymentMethod = (
+        e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
+    ) => {
+        const { name, value } = e.target;
+    
+        // Asegúrate de limpiar errores antes de validar de nuevo
+        setFieldError(name, null, setErrors);
+    
+        // Actualizar el valor según el campo
+        let newValue = value;
+    
+        // Validación específica para el número de tarjeta y teléfono
+        if (name === "number" || name === "phoneNumber") {
+            newValue = value.replace(/[^0-9]/g, ""); // Solo permitir números
+        }
+    
+        // Validaciones específicas
+        if (name === "number") {
+            const isValidCardNumber = validateLength(newValue, 16, 16);
+            if (!isValidCardNumber) {
+                setFieldError(name, "El número de tarjeta no es válido", setErrors);
+                setValidations((prev) => ({
+                    ...prev,
+                    cardNumber: false,
+                }));
+            } else {
+                setFieldError(name, null, setErrors);
+                setValidations((prev) => ({
+                    ...prev,
+                    cardNumber: true,
+                }));
+            }}
+        if (name === "phoneNumber") {
+            const isValidPhone = validateLength(newValue, 10, 10);
+            if (!isValidPhone) {
+                setFieldError(name, "El número de teléfono no es válido", setErrors);
+                setValidations((prev) => ({
+                    ...prev,
+                    phoneNumber: false,
+                }));
+            }  else {
+                setFieldError(name, null, setErrors);
+                setValidations((prev) => ({
+                    ...prev,
+                    phoneNumber: true,
+                }));
+        } }
+    
+        const cardFields = ["number", "cvc", "expMonth", "expYear", "cardHolder"];
+
+        if (cardFields.includes(name)) {
+            setPaymentMethod((prev) => ({
+                ...prev,
+                card: {
+                    ...prev.card,
+                    [name]: newValue,
+                },
+            }));
+        } else {
+            setPaymentMethod((prev) => ({
+                ...prev,
+                [name]: newValue,
+            }));
+        }
+    };
+
+    const handleSelectDataCredit = (
+        e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>,
+    ) => {
+        const { name, value } = e.target;
+        setCreditData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    const onMethodChange = (method: string) => {
+        setSelectedMethod(method);
+        setPaymentMethod((prev) => ({
+            ...prev,
+            type: method,
+            card: {
+                number: "",
+                cvc: "",
+                expMonth: "",
+                expYear: "",
+                cardHolder: "",
+            },
+            financialInstitutionCode: "",
+            installments: "0",
+            paymentDescription: "Compra de Producto de Telemedicina",
+            phoneNumber: "",
+            userLegalId: "",
+            userLegalIdType: "",
+            userType: "PERSON",
+        }));
+        setCreditData((prev) => ({
+            ...prev,
+            meddipayAuthorizationCode: "",
+        }));
+        setErrors((prev) => ({
+            ...prev,
+            number: null,
+            phoneNumber: null,
+            meddipayAuthorizationCode: null,
+        }));
+        setValidations((prev) => ({
+            ...prev,
+            cardNumber: false,
+            phoneNumber: false,
+            meddipayAuthorizationCode: false,
+        }));
+        
+    };
+
+    const handleGetDepartments = async () => {
+        try {
+            const departments = await getDepartments();
+            setDepartments(departments);
+        } catch (error) {
+            console.error("Error al obtener departamentos:", error);
+            setDepartments([]);
+        }
+    };
+    const handleGetMunicipalities = async () => {
+        try {
+            const municipalities = await getMunicipalities(
+                purchaseData.departament,
+            );
+            setMunicipalities(municipalities);
+        } catch (error) {
+            console.error("Error al obtener municipios:", error);
+            setMunicipalities([]);
+        }
+    };
+
+    const handleGetBanksPse = async () => {
+        try {
+            const banksPse = await loadBankPse();
+            setBanksPse(banksPse);
+        } catch (error) {
+            console.error("Error al obtener bancos:", error);
+            setBanksPse([]);
+        }
+    };
+
+    const handleValidtionAuthorizationCode = async () => {
+        if (creditData.meddipayAuthorizationCode) {
+            setLoading(true);
+            const isValid = await validateCodeAuthorization(
+                creditData.meddipayAuthorizationCode,
+                registerData.user.identification,
+            );
+            if (!isValid) {
+                setFieldError(
+                    "meddipayAuthorizationCode",
+                    "El código de autorización es incorrecto",
+                    setErrors,
+                );
+                setValidations((prev) => ({
+                    ...prev,
+                    meddipayAuthorizationCode: false,
+                }));
+            } else {
+                setFieldError("meddipayAuthorizationCode", null, setErrors);
+                setValidations((prev) => ({
+                    ...prev,
+                    meddipayAuthorizationCode: true,
+                }));
+            }
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        handleGetDepartments();
+        handleGetBanksPse();
+    }, []);
+
+    useEffect(() => {
+        if (currentStep === 1) {
+            handleGetMunicipalities();
+        }
+    }, [purchaseData.departament, currentStep]);
+
+    
+    useEffect(() => {
+        const patient = registerData?.user || null;
+    
+        if (isBuyerPatient && patient) {
+            // Setear los datos del paciente con espacios entre nombres y apellidos
+            const fullName = [patient.name1, patient.name2].filter(Boolean).join(' ').trim();
+            const fullLastName = [patient.lastName1, patient.lastName2].filter(Boolean).join(' ').trim();
+            
+            setPurchaseData((prev) => ({
+                ...prev,
+                names: fullName,
+                lastNames: fullLastName,
+                identification: patient.identification || "",
+                typeId: patient.typeId || "",
+            }));
+        } 
+    }, [isBuyerPatient]);
+    
+
+
+    return {
+        handleSelectDataPurchase,
+        handleSelectPaymentMethod,
+        handleSelectDataCredit,
+        departments,
+        municipalities,
+        methods,
+        onMethodChange,
+        banksPse,
+        handleValidtionAuthorizationCode,
+        Loading,
+    };
+};

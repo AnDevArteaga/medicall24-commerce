@@ -1,0 +1,1 @@
+export type OrderStatus = "aprobada" | "APPROVED" | "rechazada" | "error" | null | undefined;
