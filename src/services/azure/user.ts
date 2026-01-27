@@ -7,14 +7,14 @@ import { User } from "../../interfaces/user.interface";
 // Función para obtener los tipos de identificación
 export const fetchTypeId = async (): Promise<TypeId[]> => {
     try {
-      // Definimos el tipo explícitamente como un array de TypeId
-      const response = await axios.get(`${apiAzure}/Users/GetTypeIdentification/paciente`);
-      return response.data || []; // Aseguramos que siempre retornamos un array
+        // Definimos el tipo explícitamente como un array de TypeId
+        const response = await axios.get(`${apiAzure}/Users/GetTypeIdentification/paciente`);
+        return response.data || []; // Aseguramos que siempre retornamos un array
     } catch (error) {
-      console.error("Error al cargar tipos de identificación:", error);
-      return []; // En caso de error, retornamos un array vacío
+        console.error("Error al cargar tipos de identificación:", error);
+        return []; // En caso de error, retornamos un array vacío
     }
-  };
+};
 // Función para registrar un usuario
 export const userRegister = async (registerData: User) => {
     try {
@@ -33,10 +33,10 @@ export const checkUserRegistrationService = async (typeId: string, identificatio
             typeId,
             identification,
         });
-        return response.data.user; 
+        return response.data;
     } catch (error) {
         console.error("Error al verificar el usuario:", error);
-        throw error; 
+        throw error;
     }
 };
 
@@ -53,7 +53,7 @@ export const resendActivationCode = async (email: string) => {
     } catch (error) {
         console.error("Error al activar la cuenta:", error);
         return error;
-    }   
+    }
 };
 
 export const activateAccount = async (code: string) => {

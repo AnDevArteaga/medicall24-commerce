@@ -46,12 +46,12 @@ export const registerPurchaseData = async ( registerPurchase: registerPurchase) 
 //   return new Date(cleaned).toISOString();
 // }
 
-export const registerAppointmentData = async (id_transaccion: string, appointment: CreateAppointmentDataProps, userId: number, id_municipio: number | string, id_compra?: number) => {
+export const registerAppointmentData = async (id_transaccion: string, appointment: CreateAppointmentDataProps, patientId: number, id_municipio: number | string, id_compra?: number) => {
     console.log("appointment en fecth", appointment)
 const appoimentComplete = {
     ...appointment,
   id_transaccion,
-  patientId: userId,
+  patientId: patientId, // Usar el ID del paciente (userCompleteData.id)
   municipio: typeof id_municipio === 'string' ? parseInt(id_municipio, 10) : id_municipio, // Convertir a número si es string
   ...(id_compra && { id_compra }), // Agregar id_compra si está presente
 };

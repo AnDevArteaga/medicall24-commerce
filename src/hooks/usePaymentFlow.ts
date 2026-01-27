@@ -15,6 +15,7 @@ import { getProductLinks } from "../hooks/useSelectDataEmail";
 import { useSavePurchaseData } from "./useSavePurchaseData";
 import { updateAuthorizationData } from "../services/supabase/manage-credit";
 import { capitalize } from "../utils/forms";
+import { getDepartments, getMunicipalities } from "../services/azure/location";
 
 
 type ButtonId = "nextStepTwo" | "paidStepThree" | "confirmar" | string;
@@ -222,7 +223,7 @@ export const usePaymentFlow = () => {
                     fecha_pago: new Date().toISOString(),
                     ip_transaccion: "0",
                 };
-                const registerPruchase = fillRegisterPurchase(
+                const registerPruchase = await fillRegisterPurchase(
                     userId,
                     purchaseData,
                     paymentMethod,
@@ -235,7 +236,7 @@ export const usePaymentFlow = () => {
                 // Pasar el ID del municipio de la institución desde el contexto
                 const savePurchaseResult = await savePurchase(registerPruchase, idMunicipioInstitucion);
                 await updateAuthorizationData(creditData.meddipayAuthorizationCode);
-                
+
                 // Crear consulta después de guardar la compra (para MEDDIPAY usa "MEDDIPAY" como identificador)
                 try {
                     const { createConsultation } = await import("../services/supabase/payment");
@@ -249,7 +250,7 @@ export const usePaymentFlow = () => {
                     console.error("Error creando consulta para MEDDIPAY:", error);
                     // Aún así continuar con el flujo
                 }
-                
+
                 setTimeout(() => {
                     handleNext();
                 }, 1000);
@@ -314,14 +315,14 @@ function fillGeneralPaymentDataFromPurchaseAndPayment(
     }));
 }
 
-export function fillRegisterPurchase(
+export async function fillRegisterPurchase(
     userId: number,
     purchaseData: PurchaseData,
     paymentMethod: PaymentMethodData,
     detailPayment: detailsPayment,
     product: Product | CodeXProduct | null,
     registerPurchase: registerPurchase,
-    order?: { estado_transaccion: string, fecha_compra: string, fecha_pago: string, ip_transaccion: string, id_transaccion: string}  // 👈 order opcional para metodos de pago Tipo Credito, no se genera trancsacción
+    order?: { estado_transaccion: string, fecha_compra: string, fecha_pago: string, ip_transaccion: string, id_transaccion: string }  // 👈 order opcional para metodos de pago Tipo Credito, no se genera trancsacción
 ) {
     const getProductName = () => {
         if (!product) return "Sin producto";
@@ -336,12 +337,40 @@ export function fillRegisterPurchase(
     const porcentaje_gestor = product && "porcentaje_gestor" in product
         ? product.porcentaje_gestor
         : 0;
+
+    // Obtener los nombres de ciudad y departamento desde los IDs (solo para registro compra)
+    let ciudadNombre = purchaseData.city;
+    let departamentoNombre = purchaseData.departament;
+
+    try {
+        // Obtener el nombre del departamento
+        if (purchaseData.departament) {
+            const departments = await getDepartments();
+            const department = departments.find(d => d.id === purchaseData.departament);
+            if (department) {
+                departamentoNombre = department.nombre;
+            }
+        }
+
+        // Obtener el nombre del municipio/ciudad
+        if (purchaseData.city && purchaseData.departament) {
+            const municipalities = await getMunicipalities(purchaseData.departament);
+            const municipality = municipalities.find(m => String(m.id) === String(purchaseData.city));
+            if (municipality) {
+                ciudadNombre = municipality.nombre;
+            }
+        }
+    } catch (error) {
+        console.error("Error al obtener nombres de ciudad y departamento:", error);
+        // Si hay error, usar los IDs como fallback
+    }
+
     const prev = registerPurchase;
     return {
         ...prev,
-        ciudad_comprador: purchaseData.city,
+        ciudad_comprador: ciudadNombre, // Guardar el nombre en lugar del ID
         comision_transaccion: Number(detailPayment.commission),
-        departamento_comprador: purchaseData.departament,
+        departamento_comprador: departamentoNombre, // Guardar el nombre en lugar del ID
         descripcion_compra: getProductName(),
         direccion_comprador: purchaseData.address,
         email_comprador: purchaseData.email,

@@ -83,6 +83,7 @@ export interface registerPurchase {
   link_ayuda: string,
   link_terminos: string,
   link_pasos: string,
+  id_paciente?: number,
 }
 
 

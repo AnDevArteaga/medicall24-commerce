@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { FileText, UserCheck, CreditCard } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import {
@@ -20,6 +20,7 @@ import NotificationBadge from '../manage-credit/notification-badge'
 import Loader from '../ui/loader'
 import { useModal } from '../../contexts/modals'
 import ConfirmNegarModal from '../manage-credit/confirm-negar-modal'
+import { useRealtimeCreditNotifications } from '../../hooks/useRealtimeCreditNotifications'
 
 const ITEMS_PER_PAGE = 20
 
@@ -38,9 +39,11 @@ interface CreditManagementProps {
 }
 
 export default function CreditManagement({
-  newRecordsCount,
+  newRecordsCount, // Prop recibido pero no usado directamente, usamos el contador interno del hook
   onNotificationClick,
 }: CreditManagementProps) {
+  // Usamos el contador del hook interno en lugar del prop
+  void newRecordsCount // Evitar warning de variable no usada
   const { isModalOpen, openModal, closeModal, getModalProps } = useModal()
   const [activeTab, setActiveTab] = useState('table')
   const [searchTerm, setSearchTerm] = useState('')
@@ -54,6 +57,7 @@ export default function CreditManagement({
   )
   const [currentPage, setCurrentPage] = useState(1)
   const [currentPageUsers, setCurrentPageUsers] = useState(1)
+  const [initialNonGestionadosCount, setInitialNonGestionadosCount] = useState(0)
   const [formData, setFormData] = useState<{
     identificacion_usuario: string
     id_producto: string
@@ -108,8 +112,59 @@ export default function CreditManagement({
     const response = await getGestionUsuarioCredito()
     const users = response?.data || []
     setDataUsers(users)
+    
+    // Calcular el número de registros no gestionados para el contador inicial
+    const nonGestionadosCount = users.filter((user) => !user.gestionado && !user.negado).length
+    setInitialNonGestionadosCount(nonGestionadosCount)
+    
     setLoadingPageUsers(false)
   }
+
+  // Actualizar el contador inicial cuando cambien los datos
+  useEffect(() => {
+    const nonGestionadosCount = dataUsers.filter((user) => !user.gestionado && !user.negado).length
+    if (nonGestionadosCount !== initialNonGestionadosCount) {
+      setInitialNonGestionadosCount(nonGestionadosCount)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataUsers])
+
+  // Callbacks memoizados para las notificaciones en tiempo real
+  const handleNewNotification = useCallback((newRecord: GestionUsuarioCreditoResponse) => {
+    console.log('Nueva solicitud recibida en tiempo real:', newRecord)
+    // Actualizar la tabla cuando llegue una nueva notificación
+    getDataUsers()
+    // Solo mostrar toast si estamos en el tab de usuarios
+    if (activeTab === 'users') {
+      toast.success(
+        `Nueva solicitud de crédito: ${newRecord.nombre_comprador}`,
+        {
+          icon: '🔔',
+          duration: 3000,
+        }
+      )
+    }
+  }, [activeTab])
+
+  const handleUpdate = useCallback((updatedRecord: GestionUsuarioCreditoResponse) => {
+    console.log('Registro actualizado en tiempo real:', updatedRecord)
+    // Actualizar la tabla cuando se actualice un registro
+    getDataUsers()
+  }, [])
+
+  // Notificaciones en tiempo real para actualizar la tabla automáticamente
+  // El hook dispara las actualizaciones cuando llegan nuevas notificaciones
+  const { resetNotificationCount } = useRealtimeCreditNotifications({
+    initialCount: initialNonGestionadosCount,
+    onNewNotification: handleNewNotification,
+    onUpdate: handleUpdate,
+  })
+
+  // Calcular el contador basado en los datos reales de la tabla
+  // Este se actualiza automáticamente cuando se llama a getDataUsers()
+  const displayCount = useMemo(() => {
+    return dataUsers.filter((user) => !user.gestionado && !user.negado).length
+  }, [dataUsers])
 
   useEffect(() => {
     getData()
@@ -343,13 +398,14 @@ export default function CreditManagement({
             <div className="flex items-center space-x-2">
               <UserCheck size={18} />
               <span>Gestionar Solicitud</span>
-              {newRecordsCount > 0 && (
+              {displayCount > 0 && (
                 <NotificationBadge
-                  count={newRecordsCount}
+                  count={displayCount}
                   onClick={(e?: React.MouseEvent<HTMLButtonElement>) => {
                     if (e) {
                       e.stopPropagation()
                     }
+                    resetNotificationCount()
                     onNotificationClick()
                   }}
                 />

@@ -19,13 +19,13 @@ export const useRegister = () => {
         usePurchaseContext();
     const { openModal, closeModal } = useModal();
     const [loading, setLoading] = useState(false);
-    
+
     // Estado para manejar la visibilidad de la contraseña
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
 
-        
+
 
 
     // Verificar si el usuario ya está registrado
@@ -35,10 +35,12 @@ export const useRegister = () => {
             return;
         }
         try {
-            const user = await checkUserRegistrationService(
+            const userCompleteData = await checkUserRegistrationService(
                 registerData.user.typeId,
                 registerData.user.identification,
             );
+            const user = userCompleteData.user;
+
             if (user) {
                 console.log('user', user)
                 setIsRegistered(true);
@@ -78,7 +80,7 @@ export const useRegister = () => {
                 setUserId(response.data.id)
                 setIsRegistered(true);
                 setStatusRegister("success");
-            await resendActivationCode(registerDataCopy.user.email);
+                await resendActivationCode(registerDataCopy.user.email);
             } else {
                 setStatusRegister("error");
                 setIsRegistered(false);
@@ -133,41 +135,41 @@ export const useRegister = () => {
             newValue = value
         }
         if (name === 'email') {
-        const emailValidation = validateEmail(value);
-        console.log(emailValidation);
-        if (!emailValidation) {
-            setFieldError(name, 'El correo electrónico no es válido', setErrors);
-            setValidations((prev) => ({
-                ...prev,
-                emailValid: false,
-            }));
-        } else {
-            setFieldError(name, null, setErrors); // Limpiar el error si el correo electrónico es válido
-            setValidations((prev) => ({
-                ...prev,
-                emailValid: true,
-            }));
-        }
+            const emailValidation = validateEmail(value);
+            console.log(emailValidation);
+            if (!emailValidation) {
+                setFieldError(name, 'El correo electrónico no es válido', setErrors);
+                setValidations((prev) => ({
+                    ...prev,
+                    emailValid: false,
+                }));
+            } else {
+                setFieldError(name, null, setErrors); // Limpiar el error si el correo electrónico es válido
+                setValidations((prev) => ({
+                    ...prev,
+                    emailValid: true,
+                }));
+            }
 
 
         }
         if (name === 'password' || name === 'confirmPassword') {
             const password = registerData.user.password;
             const confirmPassword = registerData.user.confirmPassword;
-        
+
             const currentPassword = name === 'password' ? value : password;
             const currentConfirmPassword = name === 'confirmPassword' ? value : confirmPassword;
-        
+
             const passwordsMatch = checkPasswordMatch(currentPassword, currentConfirmPassword);
-            
+
             console.log(passwordsMatch ? 'Las contraseñas coinciden' : 'Las contraseñas no coinciden');
-        
+
             setFieldError(
                 'confirmPassword',
                 passwordsMatch ? null : 'Las contraseñas no coinciden',
                 setErrors
             );
-        
+
             setValidations((prev) => ({
                 ...prev,
                 passwordMatch: passwordsMatch,

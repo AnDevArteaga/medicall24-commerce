@@ -1,17 +1,27 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useGenerateTransaction } from '../../hooks/useGenerateTransaction'
-import { CheckCircle, Clock, XCircle } from 'lucide-react'
+import { CheckCircle, Clock, XCircle, Calendar } from 'lucide-react'
 import { OrderStatus } from '../../types/status'
 import { usePurchaseContext } from '../../contexts/checkout'
 import SeeEmail from './tutorials/see-email'
-import ConsultationResultModal from './consultation-result-modal'
 import TutorialNequi from './tutorials/nequi'
+import { useModal } from '../../contexts/modals'
 
 const FinalStep: React.FC = () => {
-  const { status, message, consultationResult, selectedMethod } =
-    usePurchaseContext()
+  const { status, message, selectedMethod, consultationResult } = usePurchaseContext()
   const { loading } = useGenerateTransaction()
-  const [showConsultationModal, setShowConsultationModal] = useState(false)
+  const { openModal } = useModal()
+
+  // Verificar si hay una consulta exitosa
+  const hasSuccessfulConsultation = consultationResult && 
+    (consultationResult.status === 200 || consultationResult.status === 201) &&
+    (consultationResult.data?.success === true || consultationResult.data?.data)
+
+  const handleViewConsultation = () => {
+    if (consultationResult) {
+      openModal("consultationResult", { result: consultationResult })
+    }
+  }
 
   const getStatusColor = (status: OrderStatus) => {
     const statusLower = status?.toLowerCase()
@@ -30,23 +40,6 @@ const FinalStep: React.FC = () => {
   // Verificar si el estado es aprobado (tanto "aprobada" como "APPROVED")
   const isApproved =
     status?.toLowerCase() === 'aprobada' || status?.toUpperCase() === 'APPROVED'
-
-  // Mostrar modal cuando haya un resultado de consultación
-  useEffect(() => {
-    if (consultationResult && isApproved) {
-      // Esperar un poco para que el usuario vea el cambio de estado
-      const timer = setTimeout(() => {
-        setShowConsultationModal(true)
-      }, 1000)
-      return () => clearTimeout(timer)
-    }
-  }, [consultationResult, isApproved])
-
-  const handleCloseModal = () => {
-    setShowConsultationModal(false)
-    // Opcional: limpiar el resultado después de cerrar
-    // setConsultationResult(null);
-  }
 
   const getStatusIcon = (status: OrderStatus) => {
     const statusLower = status?.toLowerCase()
@@ -103,26 +96,19 @@ const FinalStep: React.FC = () => {
 
         {isApproved && <SeeEmail />}
 
-        {/* Botón para ver resultado de consultación si existe */}
-        {consultationResult && isApproved && (
-          <div className="mt-4 flex justify-center">
+        {/* Botón para ver información de la cita cuando fue asignada correctamente */}
+        {isApproved && hasSuccessfulConsultation && (
+          <div className="mt-6 flex justify-center">
             <button
-              onClick={() => setShowConsultationModal(true)}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+              onClick={handleViewConsultation}
+              className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primarydark transition-colors duration-200 flex items-center gap-2 font-medium shadow-md hover:shadow-lg"
             >
-              Ver Resultado de Consultación
+              <Calendar className="w-5 h-5" />
+              Ver Información de la Cita
             </button>
           </div>
         )}
       </div>
-
-      {/* Modal de resultado de consultación */}
-      {showConsultationModal && consultationResult && (
-        <ConsultationResultModal
-          result={consultationResult}
-          onClose={handleCloseModal}
-        />
-      )}
     </div>
   )
 }

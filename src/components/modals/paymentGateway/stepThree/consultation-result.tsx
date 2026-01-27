@@ -1,0 +1,206 @@
+import React from "react";
+import { X, CheckCircle, XCircle, Calendar, User, Building2 } from "lucide-react";
+import ButtonForm from "../../../ui/button-forms";
+
+interface ConsultationResultModalProps {
+    result: any;
+    onClose: () => void;
+}
+
+const ConsultationResultModal: React.FC<ConsultationResultModalProps> = ({
+    result,
+    onClose,
+}) => {
+    // Parsear los datos si vienen como string JSON
+    const parseData = (data: any): any => {
+        if (!data) return null;
+        
+        // Si es un string, intentar parsearlo como JSON
+        if (typeof data === "string") {
+            try {
+                return JSON.parse(data);
+            } catch {
+                return data;
+            }
+        }
+        
+        return data;
+    };
+
+    // Obtener los datos parseados
+    const responseData = result?.data;
+    const parsedDataField = responseData?.data ? parseData(responseData.data) : null;
+    
+    // Extraer información relevante
+    const appointmentData = parsedDataField || responseData;
+    const appointmentId = appointmentData?.id;
+    const appointmentDate = appointmentData?.fecha || appointmentData?.desiredDate;
+    const appointmentState = appointmentData?.state;
+    const successMessage = responseData?.message || result?.message;
+    const isSuccess = result?.status === 200 || result?.status === 201 || responseData?.success === true;
+    
+    // Extraer información del paciente, institución, etc.
+    const patient = appointmentData?.patient;
+    const institution = appointmentData?.institution;
+    const specialty = appointmentData?.specialty;
+
+    const formatDate = (dateString: string) => {
+        if (!dateString) return "No disponible";
+        try {
+            return new Date(dateString).toLocaleString("es-CO", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+            });
+        } catch {
+            return dateString;
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] flex flex-col">
+                {/* Header con estilo de la marca */}
+                <div className="flex justify-between items-center bg-primary text-white px-6 py-4 rounded-t-lg">
+                    <div className="flex items-center gap-3">
+                        {isSuccess ? (
+                            <CheckCircle className="w-6 h-6 text-white" />
+                        ) : (
+                            <XCircle className="w-6 h-6 text-white" />
+                        )}
+                        <h2 className="text-xl font-semibold">
+                            {isSuccess ? "Cita Creada Exitosamente" : "Error al Crear la Cita"}
+                        </h2>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="text-white hover:text-gray-300 transition-colors duration-200"
+                        aria-label="Cerrar modal"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+
+                {/* Content */}
+                <div className="px-6 py-4 flex-1 overflow-y-auto text-gray-700">
+                    {/* Success/Error Message */}
+                    {successMessage && (
+                        <div className={`mb-4 p-3 rounded-lg ${
+                            isSuccess 
+                                ? "bg-green-50 border border-green-200" 
+                                : "bg-red-50 border border-red-200"
+                        }`}>
+                            <p className={`text-sm font-medium ${
+                                isSuccess ? "text-green-800" : "text-red-800"
+                            }`}>
+                                {successMessage}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Información de la Cita */}
+                    {isSuccess && appointmentData && (
+                        <div className="space-y-4">
+                            {/* ID y Estado */}
+                            <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <Calendar className="w-5 h-5 text-primary" />
+                                    <p className="text-sm font-semibold text-gray-800">
+                                        Información de la Cita
+                                    </p>
+                                </div>
+                                <div className="space-y-2 text-sm text-gray-700 ml-7">
+                                    {appointmentId && (
+                                        <p><span className="font-medium text-gray-800">ID de Cita:</span> <span className="text-primary font-semibold">{appointmentId}</span></p>
+                                    )}
+                                    {appointmentDate && (
+                                        <p><span className="font-medium text-gray-800">Fecha y Hora:</span> {formatDate(appointmentDate)}</p>
+                                    )}
+                                    {appointmentState && (
+                                        <p>
+                                            <span className="font-medium text-gray-800">Estado:</span>{" "}
+                                            <span className="capitalize font-semibold text-primary">{appointmentState}</span>
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Información del Paciente */}
+                            {patient?.user && (
+                                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <User className="w-5 h-5 text-primary" />
+                                        <p className="text-sm font-semibold text-gray-800">
+                                            Paciente
+                                        </p>
+                                    </div>
+                                    <div className="space-y-2 text-sm text-gray-700 ml-7">
+                                        <p>
+                                            <span className="font-medium text-gray-800">Nombre:</span>{" "}
+                                            {[patient.user.name1, patient.user.name2, patient.user.lastname1, patient.user.lastname2]
+                                                .filter(Boolean)
+                                                .join(" ")}
+                                        </p>
+                                        <p><span className="font-medium text-gray-800">Identificación:</span> {patient.user.identification}</p>
+                                        <p><span className="font-medium text-gray-800">Email:</span> {patient.user.email}</p>
+                                        <p><span className="font-medium text-gray-800">Teléfono:</span> {patient.user.phone}</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Información de la Institución */}
+                            {institution && (
+                                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Building2 className="w-5 h-5 text-primary" />
+                                        <p className="text-sm font-semibold text-gray-800">
+                                            Institución
+                                        </p>
+                                    </div>
+                                    <div className="space-y-2 text-sm text-gray-700 ml-7">
+                                        <p><span className="font-medium text-gray-800">Nombre:</span> {institution.name}</p>
+                                        {institution.phone1 && (
+                                            <p><span className="font-medium text-gray-800">Teléfono:</span> {institution.phone1}</p>
+                                        )}
+                                        {institution.address && (
+                                            <p><span className="font-medium text-gray-800">Dirección:</span> {institution.address}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Especialidad */}
+                            {specialty && (
+                                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                                    <p className="text-sm font-semibold text-gray-800 mb-2">
+                                        Especialidad
+                                    </p>
+                                    <p className="text-sm text-gray-700">{specialty.name}</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Error indicator */}
+                    {!isSuccess && (
+                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-sm font-medium text-red-800">
+                                No se pudo crear la cita. Por favor, contacta con soporte.
+                            </p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Footer */}
+                <div className="px-6 py-4 flex justify-end space-x-4 bg-gray-100 rounded-b-lg shrink-0">
+                    <ButtonForm onClick={onClose} text="Cerrar" />
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default ConsultationResultModal;
+

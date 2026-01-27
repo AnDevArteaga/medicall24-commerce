@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "../layouts/layout-secondary";
 import Gateway from "../components/paymentGateway/gateway";
 import DomaninVerified from "../components/modals/shared/domain-verified";
@@ -16,6 +16,7 @@ import ValidateMeddipayCupoModal from "../components/modals/paymentGateway/stepT
 import MeddipaySuccessModal from "../components/modals/paymentGateway/stepTwo/meddipay-success";
 import MeddipayErrorModal from "../components/modals/paymentGateway/stepTwo/meddipay-error";
 import SolicitarCupoMeddipayModal, { Paso } from "../components/modals/paymentGateway/stepTwo/solicitar-cupo-meddipay";
+import ConsultationResultModal from "../components/modals/paymentGateway/stepThree/consultation-result";
 import { useModal } from "../contexts/modals";
 import { useGetProduct } from "../hooks/useGetProduct";
 import { usePurchaseContext } from "../contexts/checkout";
@@ -32,9 +33,26 @@ import p3 from "../assets/img/p3.jpeg";
 const PaymentGateway: React.FC = () => {
     const { isModalOpen, closeModal, getModalProps, openModal } = useModal();
     const termCondProps = getModalProps("termCond");
-    const { product, purchaseData } = usePurchaseContext();
+    const { product, purchaseData, consultationResult, status } = usePurchaseContext();
     const setIsDirty = useBeforeUnload();
     const [loadingValidate, setLoadingValidate] = useState(false);
+    const [hasShownConsultationModal, setHasShownConsultationModal] = useState(false);
+
+    // Verificar si el estado es aprobado
+    const isApproved = status?.toLowerCase() === 'aprobada' || status?.toUpperCase() === 'APPROVED';
+
+    // Abrir modal automáticamente cuando haya un resultado de consulta y el estado sea aprobado
+    // Solo la primera vez, no si el usuario ya lo cerró
+    useEffect(() => {
+        if (consultationResult && isApproved && !isModalOpen("consultationResult") && !hasShownConsultationModal) {
+            // Esperar un poco para que el usuario vea el cambio de estado
+            const timer = setTimeout(() => {
+                openModal("consultationResult", { result: consultationResult });
+                setHasShownConsultationModal(true);
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [consultationResult, isApproved, openModal, isModalOpen, hasShownConsultationModal]);
 
     // Estado para controlar el flujo de carga
     const { loading, error } = useGetProduct();
@@ -72,17 +90,21 @@ const PaymentGateway: React.FC = () => {
         setLoadingValidate(true);
 
         try {
-            // Separar y capitalizar nombres y apellidos
-            const nombres = purchaseData.names?.split(" ") || [];
-            const apellidos = purchaseData.lastNames?.split(" ") || [];
+            // Capitalizar todas las palabras de nombres y apellidos
+            const nombresCapitalizados = purchaseData.names
+                ?.split(" ")
+                .map(nombre => capitalizeText(nombre.trim()))
+                .filter(nombre => nombre.length > 0)
+                .join(" ") || "";
             
-            const primerNombre = capitalizeText(nombres[0] || "");
-            const segundoNombre = capitalizeText(nombres[1] || "");
-            const primerApellido = capitalizeText(apellidos[0] || "");
-            const segundoApellido = capitalizeText(apellidos[1] || "");
+            const apellidosCapitalizados = purchaseData.lastNames
+                ?.split(" ")
+                .map(apellido => capitalizeText(apellido.trim()))
+                .filter(apellido => apellido.length > 0)
+                .join(" ") || "";
             
             // Combinar nombres y apellidos capitalizados
-            const nombreCompleto = `${primerNombre} ${segundoNombre} ${primerApellido} ${segundoApellido}`.trim().replace(/\s+/g, " ");
+            const nombreCompleto = `${nombresCapitalizados} ${apellidosCapitalizados}`.trim().replace(/\s+/g, " ");
 
             const dataToSend = {
                 tipoId: purchaseData.typeId || "",
@@ -267,6 +289,20 @@ const PaymentGateway: React.FC = () => {
                             onGoToMeddipay={handleGoToMeddipay}
                         />
                     )}
+
+                    {/* Modal de resultado de consultación */}
+                    {isModalOpen("consultationResult") && (() => {
+                        const consultationProps = getModalProps<{ result: { status?: number; data?: unknown } }>("consultationResult");
+                        return consultationProps ? (
+                            <ConsultationResultModal
+                                result={consultationProps.result}
+                                onClose={() => {
+                                    closeModal("consultationResult");
+                                    setHasShownConsultationModal(true); // Marcar como mostrado cuando el usuario lo cierra
+                                }}
+                            />
+                        ) : null;
+                    })()}
 
                 </>
             )}

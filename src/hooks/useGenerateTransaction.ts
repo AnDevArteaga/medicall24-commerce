@@ -11,6 +11,7 @@ import { createConsultation } from "../services/supabase/payment";
 export const useGenerateTransaction = () => {
     const [loading, setLoading] = useState(false);
     const [lastPurchaseId, setLastPurchaseId] = useState<number | undefined>(undefined);
+    const [consultationCreated, setConsultationCreated] = useState(false);
     const {
         generalPaymentData,
         setRegisterPurchase,
@@ -80,9 +81,16 @@ export const useGenerateTransaction = () => {
         setLoading(false);
         console.log("aprovada inmediatamente");
     };
+    // Resetear el flag cuando se inicia el polling para una nueva transacción
+    useEffect(() => {
+        if (startFetchingStatusPayment && registerPurchase.id_transaccion) {
+            setConsultationCreated(false);
+        }
+    }, [startFetchingStatusPayment, registerPurchase.id_transaccion]);
+
     useEffect(() => {
         const transactionId = registerPurchase.id_transaccion;
-        let intervalId: NodeJS.Timeout;
+        let intervalId: NodeJS.Timeout | null = null;
         let currentPurchaseId: number | undefined = undefined;
 
         const handleFetchPaymentStatus = async () => {
@@ -90,10 +98,12 @@ export const useGenerateTransaction = () => {
                 const order = await fetchPaymentStatus(transactionId);
                 console.log("order", order);
                 setOrder(order);
-                setStatus(order.order.status);
+                const orderStatus = order.order.status;
+                setStatus(orderStatus);
                 setMessage(order.message);
                 setLoading(false);
                 console.log("order", order);
+
                 // Extraer solo los valores necesarios de order
                 if (!registerPurchaseSaved) {
                     const extractedOrder = {
@@ -105,8 +115,8 @@ export const useGenerateTransaction = () => {
                         id_transaccion: order?.data?.id ?? 0,
                         ip_transaccion: order?.order?.paymentRemoteIP ?? "0",
                     };
-    
-                    const registerPrurchase = fillRegisterPurchase(
+
+                    const registerPrurchase = await fillRegisterPurchase(
                         userId,
                         purchaseData,
                         paymentMethod,
@@ -119,35 +129,64 @@ export const useGenerateTransaction = () => {
                     // Pasar el ID del municipio de la institución desde el contexto
                     const savePurchaseData = await savePurchase(registerPrurchase, idMunicipioInstitucion);
                     console.log("savePurchaseData", savePurchaseData);
-    
+
                     setRegisterPurchaseSaved(true);
-                    
+
                     // Guardar el id_compra localmente para usarlo después en createConsultation
                     if (savePurchaseData?.id_compra) {
                         currentPurchaseId = savePurchaseData.id_compra;
                         setLastPurchaseId(savePurchaseData.id_compra);
                     }
                 }
-            
+
+                // Crear consulta cuando el estado sea aprobado (tanto "aprobada" como "APPROVED")
+                // IMPORTANTE: Crear la consulta ANTES de detener el polling
+                const isApproved = orderStatus?.toLowerCase() === "aprobada" || orderStatus?.toUpperCase() === "APPROVED";
+                if (isApproved && !consultationCreated) {
+                    // Usar el id_compra guardado (usar currentPurchaseId si está disponible, sino lastPurchaseId)
+                    const idCompraToUse = currentPurchaseId ?? lastPurchaseId;
+                    if (idCompraToUse) {
+                        try {
+                            const consultation = await createConsultation(transactionId, idCompraToUse);
+                            console.log("consultation creada para método de pago:", consultation);
+                            // Guardar el resultado de la consulta en el contexto
+                            setConsultationResult(consultation);
+                            setConsultationCreated(true); // Marcar como creada para evitar duplicados
+                        } catch (error) {
+                            console.error("Error creando consulta:", error);
+                        }
+                    } else {
+                        console.warn("No se pudo crear la consulta: id_compra no disponible");
+                    }
+                }
+
                 const redirect_url =
                     `${order.data.redirect_url}?id=${transactionId}`;
                 if (
-                    order.order.status === "aprobada" ||
-                    order.order.status === "rechazada" ||
-                    order.order.status === "error"
+                    orderStatus?.toLowerCase() === "aprobada" ||
+                    orderStatus?.toUpperCase() === "APPROVED" ||
+                    orderStatus?.toLowerCase() === "rechazada" ||
+                    orderStatus?.toLowerCase() === "error"
                 ) {
-                    clearInterval(intervalId);
                     window.open(redirect_url, "_blank");
                 }
-                // Crear consulta cuando el estado sea aprobado (tanto "aprobada" como "APPROVED")
-                if (order.order.status === "aprobada" || order.order.status === "APPROVED") {
-                    // Usar el id_compra guardado (usar currentPurchaseId si está disponible, sino lastPurchaseId)
-                    const idCompraToUse = currentPurchaseId ?? lastPurchaseId;
-                    const consultation = await createConsultation(transactionId, idCompraToUse);
-                    console.log("consultation", consultation);
-                    // Guardar el resultado de la consulta en el contexto
-                    setConsultationResult(consultation);
+
+                // Verificar si el estado está resuelto (aprobado o rechazado)
+                // Detener el polling DESPUÉS de crear la consulta
+                const isResolved =
+                    orderStatus?.toLowerCase() === "aprobada" ||
+                    orderStatus?.toUpperCase() === "APPROVED" ||
+                    orderStatus?.toLowerCase() === "rechazada" ||
+                    orderStatus?.toLowerCase() === "error";
+
+                // Si el estado está resuelto, detener el polling
+                if (isResolved && intervalId) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                    setStartFetchingStatusPayment(false); // Desactivar el polling
+                    console.log("Polling detenido - Estado resuelto:", orderStatus);
                 }
+
                 return order;
             } catch (error) {
                 console.error("Error fetching payment status:", error);
@@ -155,7 +194,11 @@ export const useGenerateTransaction = () => {
             }
         };
 
-        if (startFetchingStatusPayment) {
+        if (startFetchingStatusPayment && transactionId) {
+            // Ejecutar inmediatamente la primera vez
+            handleFetchPaymentStatus();
+
+            // Configurar el intervalo solo si el estado no está resuelto
             intervalId = setInterval(() => {
                 handleFetchPaymentStatus();
             }, 4000);
@@ -164,9 +207,11 @@ export const useGenerateTransaction = () => {
         return () => {
             if (intervalId) {
                 clearInterval(intervalId);
+                intervalId = null;
             }
         };
-    }, [registerPurchase.id_transaccion, startFetchingStatusPayment, registerPurchaseSaved]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [registerPurchase.id_transaccion, startFetchingStatusPayment, registerPurchaseSaved, consultationCreated]);
 
     return {
         handleGenerateTransaction,
