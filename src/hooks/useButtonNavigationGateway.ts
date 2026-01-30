@@ -11,13 +11,25 @@ import { toast } from "react-hot-toast";
 const useNavigationButton = (
     currentStep: number,
     isUserRegistered: boolean,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    setCurrentStep: React.Dispatch<React.SetStateAction<number>>,
+    // setCurrentStep: React.Dispatch<React.SetStateAction<number>>,
 ) => {
     const { validations, registerData, handleNext, purchaseData, paymentMethod, selectedMethod, creditData, detailPayment } = usePurchaseContext();
     const { openModal, closeModal } = useModal();
+    
+    // Inicializar el estado con un valor por defecto basado en el paso inicial
+    const getInitialButtonText = () => {
+        if (currentStep === 0) {
+            return !isUserRegistered ? "Regístrate" : "Siguiente";
+        } else if (currentStep === 1) {
+            return "Continuar";
+        } else if (currentStep === 2) {
+            return "Continuar";
+        }
+        return "";
+    };
+    
     const [buttonConfig, setButtonConfig] = useState({
-        text: "",
+        text: getInitialButtonText(),
         disabled: true,
         onClick: () => {},
     });
@@ -25,17 +37,17 @@ const useNavigationButton = (
     const { executeAction } = usePaymentFlow()
     
     // Usar refs para almacenar valores anteriores y evitar loops
-    const prevValuesRef = useRef({
-        currentStep,
-        isUserRegistered,
-        selectedMethod,
-        creditDataMeddipay: creditData?.meddipayAuthorizationCode || '',
-        registerDataStr: JSON.stringify(registerData),
-        purchaseDataStr: JSON.stringify(purchaseData),
-        paymentMethodStr: JSON.stringify(paymentMethod),
-        validationsStr: JSON.stringify(validations),
-        detailPaymentStr: JSON.stringify(detailPayment),
-    });
+    const prevValuesRef = useRef<{
+        currentStep?: number;
+        isUserRegistered?: boolean;
+        selectedMethod?: string;
+        creditDataMeddipay?: string;
+        registerDataStr?: string;
+        purchaseDataStr?: string;
+        paymentMethodStr?: string;
+        validationsStr?: string;
+        detailPaymentStr?: string;
+    }>({});
 
     // Memoizar las funciones de callback para evitar recrearlas
     const handleOpenTermModal = useCallback(() => {
@@ -186,8 +198,12 @@ const useNavigationButton = (
             prevValuesRef.current.validationsStr !== currentValues.validationsStr ||
             prevValuesRef.current.detailPaymentStr !== currentValues.detailPaymentStr;
 
-        if (!hasRelevantChanges) {
-            return; // No hay cambios relevantes, no actualizar
+        // Verificar si es el primer render
+        const isFirstRender = prevValuesRef.current.currentStep === undefined;
+        
+        // En el primer render o si hay cambios relevantes, actualizar la configuración
+        if (!hasRelevantChanges && !isFirstRender) {
+            return; // No hay cambios relevantes, no actualizar (excepto en el primer render)
         }
 
         // Actualizar referencia

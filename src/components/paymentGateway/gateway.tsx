@@ -15,7 +15,7 @@ const PaginacionSlider: React.FC = () => {
   // Estado para el paso actual
   const {
     currentStep,
-    setCurrentStep,
+    // setCurrentStep,
     isRegistered,
     sliderRef,
     handlePrevious,
@@ -24,7 +24,6 @@ const PaginacionSlider: React.FC = () => {
   const { text, disabled, onClick } = useNavigationButton(
     currentStep,
     isRegistered,
-    setCurrentStep
   )
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [sliderHeight, setSliderHeight] = useState<number | 'auto'>('auto')
@@ -35,11 +34,11 @@ const PaginacionSlider: React.FC = () => {
     if (sliderRef.current && sliderContainerRef.current) {
       // Obtener el slide actual
       const slickList = sliderContainerRef.current.querySelector(
-        '.slick-list'
+        '.slick-list',
       ) as HTMLElement
       if (slickList) {
         const slickTrack = slickList.querySelector(
-          '.slick-track'
+          '.slick-track',
         ) as HTMLElement
         if (slickTrack) {
           // Buscar el slide activo (el que tiene la clase slick-active o el que corresponde al currentStep)
@@ -60,7 +59,7 @@ const PaginacionSlider: React.FC = () => {
               const height = Math.max(
                 slideContent.scrollHeight,
                 slideContent.offsetHeight,
-                currentSlide.offsetHeight
+                currentSlide.offsetHeight,
               )
               setSliderHeight(height)
             } else {

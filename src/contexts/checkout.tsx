@@ -177,9 +177,7 @@ export const PurchaseProvider = ({ children }:{ children: ReactNode }) => {
         }));
       }, [registerData]);
 
-      useEffect(() => {
-        console.log('paymentMethod', purchaseData);
-      }, [purchaseData]);
+
 
   
   return (

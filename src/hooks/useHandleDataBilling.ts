@@ -31,15 +31,14 @@ export const useBillingForm = () => {
       ...prev,
       [name]: value,
     }));
-    console.log(registerPurchase);
   };
 
 
 
   return {
     handleDataBilling,
-    
-    
+
+
     registerPurchase,
   };
 };

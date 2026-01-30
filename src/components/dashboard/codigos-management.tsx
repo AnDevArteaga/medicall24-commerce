@@ -272,12 +272,6 @@ export default function CodigosManagement() {
           } finally {
             setGeneratingDesign(false)
           }
-        } else {
-          // Si no cambió producto ni código, limpiar el cache para usar el existente
-          // El diseño existente sigue siendo válido
-          console.log(
-            'Producto y código no cambiaron, manteniendo diseño existente'
-          )
         }
       } else {
         // Al crear, siempre generar el diseño después de guardar

@@ -120,7 +120,6 @@ const SelectAllie: React.FC = () => {
 
   const fecha = new Date(createAppointmentData.fecha.replace('Z', ''))
 
-  console.log(fecha)
   const fechaFormateada = fecha.toLocaleDateString('es-ES', {
     weekday: 'long',
     day: 'numeric',

@@ -90,7 +90,6 @@ export const useAppointmentFlow = (onClose: () => void) => {
     setAppointment((prev) => ({ ...prev, date: day.date }));
     setView("hours");
     setLoading(true);
-    console.log("day", day);
     try {
       const data = await getHoursAvailable(
         appointment.institutionsId,
@@ -100,7 +99,6 @@ export const useAppointmentFlow = (onClose: () => void) => {
         appointment.idTypeServices,
         day.date
       );
-      console.log("data", data);
       setHours(data);
     } catch (err) {
       setError("Error al obtener horarios");

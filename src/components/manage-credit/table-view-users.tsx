@@ -98,7 +98,6 @@ const TableViewUsers: React.FC<TableViewUsersProps> = ({
         isGestionMode: true, // Activar modo gestión
         id_gestion: row.id, // Guardar el ID de la gestión
       }))
-      console.log('formData', row)
 
       toast.success(
         'Formulario prellenado. Complete la fecha de aprobación y el código de autorización.'

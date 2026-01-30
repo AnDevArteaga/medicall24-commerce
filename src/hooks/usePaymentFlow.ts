@@ -16,6 +16,7 @@ import { useSavePurchaseData } from "./useSavePurchaseData";
 import { updateAuthorizationData } from "../services/supabase/manage-credit";
 import { capitalize } from "../utils/forms";
 import { getDepartments, getMunicipalities } from "../services/azure/location";
+import { createConsultation } from "../services/supabase/payment";
 
 
 type ButtonId = "nextStepTwo" | "paidStepThree" | "confirmar" | string;
@@ -63,20 +64,17 @@ export const usePaymentFlow = () => {
     } = useGenerateTransaction();
 
     useEffect(() => {
-        console.log("registerPurchase", registerPurchase);
     }, [registerPurchase]);
     const actions: ActionsMap = {
         BANCOLOMBIA_TRANSFER: {
             nextStepTwo: async () => {
                 setLoading(true);
-                console.log("nextStepTwo");
                 fillGeneralPaymentDataFromPurchaseAndPayment(
                     purchaseData,
                     paymentMethod,
                     setGeneralPaymentData,
                 );
-                const detailPayment = await handleGetDetailPayment();
-                console.log("detailPayment", detailPayment);
+                await handleGetDetailPayment();
                 closeModal("selectAllieBexa");
                 setLoading(false);
                 handleNext();
@@ -93,8 +91,7 @@ export const usePaymentFlow = () => {
                 const asyncPaymentUrl = await handleCheckAsyncPaymentUrl(
                     transactionId,
                 );
-                redirectToPaymentPage(asyncPaymentUrl);
-                console.log("transactionId", transactionId);
+                redirectToPaymentPage(asyncPaymentUrl || undefined);
                 setStartFetchingStatusPayment(true);
                 closeModal("verifiyEmail");
                 setLoading(false);
@@ -104,14 +101,12 @@ export const usePaymentFlow = () => {
         CARD: {
             nextStepTwo: async () => {
                 setLoading(true);
-                console.log("nextStepTwo");
                 fillGeneralPaymentDataFromPurchaseAndPayment(
                     purchaseData,
                     paymentMethod,
                     setGeneralPaymentData,
                 );
-                const detailPayment = await handleGetDetailPayment();
-                console.log("detailPayment", detailPayment);
+                await handleGetDetailPayment();
                 // closeModal("selectAllie");
                 closeModal("selectAllieBexa");
                 setLoading(false);
@@ -126,7 +121,6 @@ export const usePaymentFlow = () => {
                     setLoading(false);
                     return;
                 }
-                console.log("transactionId", transactionId);
                 setStartFetchingStatusPayment(true);
                 closeModal("verifiyEmail");
                 setLoading(false);
@@ -136,14 +130,12 @@ export const usePaymentFlow = () => {
         PSE: {
             nextStepTwo: async () => {
                 setLoading(true);
-                console.log("nextStepTwo");
                 fillGeneralPaymentDataFromPurchaseAndPayment(
                     purchaseData,
                     paymentMethod,
                     setGeneralPaymentData,
                 );
-                const detailPayment = await handleGetDetailPayment();
-                console.log("detailPayment", detailPayment);
+                await handleGetDetailPayment();
                 // closeModal("selectAllie");
                 closeModal("selectAllieBexa");
                 setLoading(false);
@@ -161,8 +153,7 @@ export const usePaymentFlow = () => {
                 const asyncPaymentUrl = await handleCheckAsyncPaymentUrl(
                     transactionId,
                 );
-                redirectToPaymentPage(asyncPaymentUrl);
-                console.log("transactionId", transactionId);
+                redirectToPaymentPage(asyncPaymentUrl || undefined);
                 setStartFetchingStatusPayment(true);
                 closeModal("verifiyEmail");
                 setLoading(false);
@@ -172,14 +163,12 @@ export const usePaymentFlow = () => {
         NEQUI: {
             nextStepTwo: async () => {
                 setLoading(true);
-                console.log("nextStepTwo");
                 fillGeneralPaymentDataFromPurchaseAndPayment(
                     purchaseData,
                     paymentMethod,
                     setGeneralPaymentData,
                 );
-                const detailPayment = await handleGetDetailPayment();
-                console.log("detailPayment", detailPayment);
+                await handleGetDetailPayment();
                 // closeModal("selectAllie");
                 closeModal("selectAllieBexa");
                 setLoading(false);
@@ -194,7 +183,6 @@ export const usePaymentFlow = () => {
                     setLoading(false);
                     return;
                 }
-                console.log("transactionId", transactionId);
                 setStartFetchingStatusPayment(true);
                 closeModal("verifiyEmail");
                 setLoading(false);
@@ -232,23 +220,68 @@ export const usePaymentFlow = () => {
                     registerPurchase,
                     meddipayOrder, // Order especial para MEDDIPAY
                 );
-                console.log("registerPruchase", registerPruchase);
                 // Pasar el ID del municipio de la institución desde el contexto
                 const savePurchaseResult = await savePurchase(registerPruchase, idMunicipioInstitucion);
                 await updateAuthorizationData(creditData.meddipayAuthorizationCode);
 
                 // Crear consulta después de guardar la compra (para MEDDIPAY usa "MEDDIPAY" como identificador)
                 try {
-                    const { createConsultation } = await import("../services/supabase/payment");
                     // Obtener el id_compra del resultado de savePurchase
                     const idCompra = savePurchaseResult?.id_compra;
                     const consultation = await createConsultation("MEDDIPAY", idCompra);
-                    console.log("consultation MEDDIPAY", consultation);
-                    // Guardar el resultado de la consulta en el contexto
-                    setConsultationResult(consultation);
-                } catch (error) {
-                    console.error("Error creando consulta para MEDDIPAY:", error);
-                    // Aún así continuar con el flujo
+                    
+                    // Verificar si la consulta fue exitosa
+                    if (consultation.error || (consultation.status !== 200 && consultation.status !== 201)) {
+                        // Extraer mensaje de error del objeto retornado
+                        const errorMessage = consultation.data?.error || 
+                            (typeof consultation.data === 'object' && consultation.data !== null && 'error' in consultation.data 
+                                ? String(consultation.data.error) 
+                                : 'Error al crear la consulta');
+                        
+                        console.error("❌ [MEDDIPAY] Error en respuesta:", errorMessage);
+                        
+                        // Establecer el resultado con el error para que se muestre en el modal de consulta
+                        setConsultationResult({
+                            ...consultation,
+                            error: true,
+                            data: {
+                                ...consultation.data,
+                                error: errorMessage
+                            }
+                        });
+                    } else {
+                        // Guardar el resultado de la consulta en el contexto
+                        setConsultationResult(consultation);
+                    }
+                } catch (error: unknown) {
+                    console.error("❌ [MEDDIPAY] Error creando consulta:", error);
+                    
+                    // Extraer el mensaje de error
+                    let errorMessage = 'Ocurrió un error al crear la consulta. Por favor comparte este error con soporte.';
+                    
+                    // Manejar diferentes tipos de errores
+                    if (error && typeof error === 'object' && 'response' in error) {
+                        const axiosError = error as { response?: { data?: { error?: string } } };
+                        if (axiosError.response?.data?.error) {
+                            errorMessage = axiosError.response.data.error;
+                        }
+                    } else if (error && typeof error === 'object' && 'message' in error) {
+                        const errorWithMessage = error as { message?: string };
+                        if (errorWithMessage.message) {
+                            errorMessage = errorWithMessage.message;
+                        }
+                    } else if (typeof error === 'string') {
+                        errorMessage = error;
+                    }
+                    
+                    // Establecer el resultado con el error para que se muestre en el modal de consulta
+                    setConsultationResult({
+                        status: 500,
+                        error: true,
+                        data: {
+                            error: errorMessage
+                        }
+                    });
                 }
 
                 setTimeout(() => {
@@ -328,7 +361,9 @@ export async function fillRegisterPurchase(
         if (!product) return "Sin producto";
         return "nombre" in product ? product.nombre : product.producto;
     };
-    const productLinks = getProductLinks(product!.id_producto);
+    const productLinks = product?.id_producto 
+        ? getProductLinks(product.id_producto) 
+        : { linkBanner: "", linkTerminos: "", linkPasos: "" };
     const id_aliado = product && "id_aliado" in product ? product.id_aliado : 0;
     const id_codigo_promo = product && "id_codigo" in product
         ? Number(product.id_codigo)
@@ -396,7 +431,7 @@ export async function fillRegisterPurchase(
         telefono_comprador: purchaseData.phone,
         total: Number(detailPayment.total),
         total_centavos: Number(detailPayment.total) * 100,
-        link_ayuda: productLinks.linkBanner,
+        link_ayuda: productLinks.linkBanner || "",
         link_terminos: productLinks.linkTerminos,
         link_pasos: productLinks.linkPasos + id_aliado,
     };

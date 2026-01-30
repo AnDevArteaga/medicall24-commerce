@@ -9,7 +9,7 @@ export const useGetProduct = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const { setProduct, setGeneralPaymentData, product } = usePurchaseContext();
-    
+
     // Usar refs para evitar llamadas duplicadas y almacenar funciones del contexto
     const isFetchingRef = useRef(false);
     const lastProductIdRef = useRef<string | null>(null);
@@ -30,7 +30,7 @@ export const useGetProduct = () => {
 
     useEffect(() => {
         mountedRef.current = true;
-        
+
         const getProduct = async () => {
             // Si ya estamos obteniendo el producto, no hacer nada
             if (isFetchingRef.current) {
@@ -40,7 +40,7 @@ export const useGetProduct = () => {
             // Verificar si los parámetros han cambiado
             const currentProductId = productId || null;
             const currentCodeId = codeId || null;
-            
+
             if (
                 currentProductId === lastProductIdRef.current &&
                 currentCodeId === lastCodeIdRef.current &&
@@ -117,7 +117,6 @@ export const useGetProduct = () => {
                         }),
                     );
                 }
-                console.log(finalProduct);
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : "Error al obtener el producto.";
                 if (mountedRef.current) {

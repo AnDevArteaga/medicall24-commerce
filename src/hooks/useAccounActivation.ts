@@ -60,14 +60,14 @@ export const useAccountActivation = () => {
     setCanResend(false);
     setResendTimer(10);
     const response = await resendActivationCode(email); // Llamamos al servicio de reenvío
-    console.log(response);
     if (response != 200) {
-        setErrorMessage("Error al reenviar el código");
-        setIsError(true);
+      setErrorMessage("Error al reenviar el código");
+      setIsError(true);
     } else {
-        setErrorMessage("");
-        setIsError(false);
-  };}
+      setErrorMessage("");
+      setIsError(false);
+    };
+  }
 
   return {
     activationCode,

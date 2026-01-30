@@ -7,8 +7,8 @@ import { Appointment } from "../contexts/appoiment";
 
 export const useAllies = () => {
   const [allies, setAllies] = useState<Ally[]>([]);
-      const { setAppointment, setInstitutions } = Appointment();
-      const { isModalOpen, openModal, closeModal } = useModal();
+  const { setAppointment, setInstitutions } = Appointment();
+  const { isModalOpen, openModal, closeModal } = useModal();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,7 +16,6 @@ export const useAllies = () => {
     const loadAllies = async () => {
       try {
         const data = await fetchAllies();
-        console.log('data', data)
         setAllies(data);
       } catch (err) {
         setError("Error al cargar aliados");
@@ -27,9 +26,8 @@ export const useAllies = () => {
     };
     loadAllies();
   }, []);
-  
+
   const handleSelectAlly = (institution: any) => {
-    console.log(institution);
     setAppointment((prev) => ({
       ...prev,
       institutionsId: institution.id_institucion

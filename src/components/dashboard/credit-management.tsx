@@ -131,7 +131,6 @@ export default function CreditManagement({
 
   // Callbacks memoizados para las notificaciones en tiempo real
   const handleNewNotification = useCallback((newRecord: GestionUsuarioCreditoResponse) => {
-    console.log('Nueva solicitud recibida en tiempo real:', newRecord)
     // Actualizar la tabla cuando llegue una nueva notificación
     getDataUsers()
     // Solo mostrar toast si estamos en el tab de usuarios
@@ -146,8 +145,7 @@ export default function CreditManagement({
     }
   }, [activeTab])
 
-  const handleUpdate = useCallback((updatedRecord: GestionUsuarioCreditoResponse) => {
-    console.log('Registro actualizado en tiempo real:', updatedRecord)
+  const handleUpdate = useCallback(() => {
     // Actualizar la tabla cuando se actualice un registro
     getDataUsers()
   }, [])

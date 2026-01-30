@@ -9,7 +9,6 @@ export const DetailPayment = () => {
     const { generalPaymentData, selectedMethod, setDetailPayment, product } = usePurchaseContext();
     const handleGetDetailPayment = async () => {
         const { productId, discount } = generalPaymentData;
-        console.log('productId', productId, 'discount', discount)
         setLoading(true);
         try {
             const detailPayment = await getDetailPayment(
@@ -36,18 +35,18 @@ export const DetailPayment = () => {
         }
     };
 
-   const handleSetterDetailPayment = () => {
-       setDetailPayment({
-           paymentMethod: selectedMethod,
-           description: null,
-           valor: product!.valor_cop,
-           descuento: 0,
-           subtotal: product!.valor_cop,
-           iva: 0,
-           commission: 0,
-           total: product!.valor_cop,
-       });
-   }
+    const handleSetterDetailPayment = () => {
+        setDetailPayment({
+            paymentMethod: selectedMethod,
+            description: null,
+            valor: product!.valor_cop,
+            descuento: 0,
+            subtotal: product!.valor_cop,
+            iva: 0,
+            commission: 0,
+            total: product!.valor_cop,
+        });
+    }
 
     return { loading, handleGetDetailPayment, handleSetterDetailPayment };
 };

@@ -14,6 +14,10 @@ const productLinksMap: Record<number, ProductLinks> = {
 };
 
 export const getProductLinks = (idProducto: number): ProductLinks => {
-
-    return productLinksMap[idProducto];
+    // Retornar valores por defecto si el producto no está en el mapa
+    return productLinksMap[idProducto] || {
+        linkBanner: "",
+        linkTerminos: "",
+        linkPasos: "",
+    };
 };

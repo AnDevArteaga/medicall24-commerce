@@ -15,7 +15,6 @@ export const useProductData = () => {
           fetchCodeXProduct(),
           getProducts(),
         ]);
-        console.log(codigos, productosData)
         setCodigos(codigosData);
         setProductos(productosData);
       } catch (err) {

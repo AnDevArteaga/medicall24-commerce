@@ -45,11 +45,7 @@ const HeaderSecondary: React.FC<HeaderSecondaryProps> = ({
       <div className="container mx-auto flex justify-between items-center py-4 px-4">
         {/* Logo */}
         <div className="flex items-center">
-          <img
-            src="https://medicall24.com.co/wp-content/uploads/2024/12/lettermarkoriginal.png"
-            alt="Medicall24 Logo"
-            className="w-40 h-auto"
-          />
+          <img src="/M5.png" alt="Medicall24 Losgo" className="w-40 h-auto" />
         </div>
 
         {/* Navegación Desktop */}
