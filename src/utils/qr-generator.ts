@@ -279,5 +279,5 @@ export const downloadImage = (dataUrl: string, filename: string) => {
  * Construye la URL del código promocional
  */
 export const buildPromoUrl = (productId: number, codPromo: string): string => {
-    return `https://appmedicall24.com/pagos?p=${productId}&c=${codPromo}`;
+    return `https://appmedicall24.com/Examen-bexa?promo=${codPromo}&product=${productId}`;
 };
