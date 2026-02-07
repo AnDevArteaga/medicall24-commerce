@@ -1,8 +1,10 @@
 import axios from "axios";
 import { apiSupabase } from "../config/apis";
+import { buildOrIlikeFilter, appendSearchParam } from "../../dashboard/utils";
 
 export interface RegistroCompra {
     id_compra: number;
+    id_orden_pago?: number | null;
     id_transaccion: string;
     id_usuario_medicall: number;
     id_aliado: number;
@@ -98,7 +100,17 @@ export const getTotalVentas = async (): Promise<number> => {
     }
 };
 
-// Obtener ventas con paginación
+const VENTAS_SEARCH_COLUMNS = [
+    "producto",
+    "nombre_comprador",
+    "email_comprador",
+    "identificacion_comprador",
+    "ciudad_comprador",
+    "departamento_comprador",
+    "nombre_institucion",
+] as const;
+
+// Obtener ventas con paginación y búsqueda en base de datos
 export const getVentas = async (
     page: number = 1,
     limit: number = 20,
@@ -111,9 +123,16 @@ export const getVentas = async (
         const offset = (page - 1) * limit;
         const from = offset;
         const to = offset + limit - 1;
-        
-        const url = `${apiSupabase}/registro_compra?select=*&estado_transaccion=eq.APPROVED&order=fecha_compra.desc&limit=${limit}&offset=${offset}`;
-        
+
+        let url = `${apiSupabase}/registro_compra?select=*&estado_transaccion=eq.APPROVED&order=fecha_compra.desc&limit=${limit}&offset=${offset}`;
+        if (searchTerm?.trim()) {
+            const orFilter = buildOrIlikeFilter(
+                [...VENTAS_SEARCH_COLUMNS],
+                searchTerm
+            );
+            url = appendSearchParam(url, orFilter);
+        }
+
         const response = await axios.get(url, {
             headers: {
                 apikey: import.meta.env.VITE_SUPABASE_CLIENT_ANON_KEY_API,
@@ -122,40 +141,18 @@ export const getVentas = async (
                 Prefer: "count=exact",
             },
         });
-        
-        // Obtener el total del header Content-Range
-        const contentRange = response.headers['content-range'];
+
+        const contentRange = response.headers["content-range"];
         let total = 0;
         if (contentRange) {
-            total = parseInt(contentRange.split('/')[1]);
+            total = parseInt(contentRange.split("/")[1], 10);
         } else {
-            // Si no hay Content-Range, usar el total de la respuesta
             total = Array.isArray(response.data) ? response.data.length : 0;
         }
-        
-        // Si hay término de búsqueda, filtrar los resultados
-        let filteredData = response.data || [];
-        if (searchTerm && searchTerm.trim()) {
-            const search = searchTerm.toLowerCase();
-            filteredData = filteredData.filter(
-                (venta: RegistroCompra) =>
-                    venta.identificacion_comprador?.toLowerCase().includes(search) ||
-                    venta.nombre_comprador?.toLowerCase().includes(search) ||
-                    venta.email_comprador?.toLowerCase().includes(search) ||
-                    venta.ciudad_comprador?.toLowerCase().includes(search) ||
-                    venta.departamento_comprador?.toLowerCase().includes(search) ||
-                    venta.producto?.toLowerCase().includes(search) ||
-                    venta.nombre_institucion?.toLowerCase().includes(search)
-            );
-            // Cuando hay búsqueda, el total es aproximado (solo de la página actual)
-            // Para obtener el total real con búsqueda, necesitaríamos otra consulta
-            // Por ahora, usamos el total filtrado de esta página
-            total = filteredData.length;
-        }
-        
+
         return {
-            data: filteredData,
-            total: total,
+            data: response.data || [],
+            total,
         };
     } catch (error) {
         console.error("Error obteniendo ventas:", error);
@@ -274,6 +271,122 @@ export const getVentasCompletas = async (
     } catch (error) {
         console.error("Error obteniendo ventas completas:", error);
         return { data: [], total: 0 };
+    }
+};
+
+/** Tipo para la vista de pago a gestores: venta con numero_orden si tiene orden asociada */
+export interface VentaParaPagoGestores extends VentaCompleta {
+    numero_orden?: number | null;
+}
+
+/** Columnas buscables en ventas para pago gestores (misma tabla registro_compra) */
+const PAGO_GESTORES_SEARCH_COLUMNS = [
+    "producto",
+    "nombre_comprador",
+    "email_comprador",
+    "identificacion_comprador",
+] as const;
+
+/** Obtener ventas filtradas para el módulo de pago a gestores: APPROVED, id_gestor > 0, id_codigo_promo > 0. Búsqueda en BD. */
+export const getVentasParaPagoGestores = async (
+    page: number = 1,
+    limit: number = 20,
+    searchTerm?: string
+): Promise<{ data: VentaParaPagoGestores[]; total: number }> => {
+    try {
+        const offset = (page - 1) * limit;
+        const from = offset;
+        const to = offset + limit - 1;
+
+        let url = `${apiSupabase}/registro_compra?select=*&estado_transaccion=eq.APPROVED&id_gestor=gt.0&id_codigo_promo=gt.0&order=fecha_compra.desc&limit=${limit}&offset=${offset}`;
+        if (searchTerm?.trim()) {
+            const orFilter = buildOrIlikeFilter(
+                [...PAGO_GESTORES_SEARCH_COLUMNS],
+                searchTerm
+            );
+            url = appendSearchParam(url, orFilter);
+        }
+
+        const response = await axios.get(url, {
+            headers: {
+                apikey: import.meta.env.VITE_SUPABASE_CLIENT_ANON_KEY_API,
+                Authorization: import.meta.env.VITE_SUPABASE_CLIENT_ANON_KEY_AUTH,
+                Range: `${from}-${to}`,
+                Prefer: "count=exact",
+            },
+        });
+
+        const contentRange = response.headers["content-range"];
+        let total = 0;
+        if (contentRange) {
+            total = parseInt(contentRange.split("/")[1], 10);
+        } else {
+            total = Array.isArray(response.data) ? response.data.length : 0;
+        }
+
+        const ventas: RegistroCompra[] = response.data || [];
+
+        const { getOrdenPagoById } = await import("./ordenes-pago-gestores");
+
+        const ventasParaPago: VentaParaPagoGestores[] = await Promise.all(
+            ventas.map(async (venta) => {
+                const ventaCompleta: VentaParaPagoGestores = {
+                    ...venta,
+                    codigo_promo: venta.id_codigo_promo
+                        ? await getCodigoPromoById(venta.id_codigo_promo)
+                        : null,
+                    gestor: venta.id_gestor
+                        ? await getGestorComercialById(venta.id_gestor)
+                        : null,
+                };
+                if (venta.id_orden_pago) {
+                    const orden = await getOrdenPagoById(venta.id_orden_pago);
+                    ventaCompleta.numero_orden = orden?.numero_orden ?? null;
+                } else {
+                    ventaCompleta.numero_orden = null;
+                }
+                return ventaCompleta;
+            })
+        );
+
+        return { data: ventasParaPago, total };
+    } catch (error) {
+        console.error("Error obteniendo ventas para pago gestores:", error);
+        return { data: [], total: 0 };
+    }
+};
+
+/** Obtener registros de compra asociados a una orden de pago (para modal en modo visualización) */
+export const getRegistrosCompraPorOrdenPago = async (
+    idOrdenPago: number
+): Promise<VentaParaPagoGestores[]> => {
+    try {
+        const response = await axios.get(
+            `${apiSupabase}/registro_compra?select=*&id_orden_pago=eq.${idOrdenPago}&order=fecha_compra.desc`,
+            {
+                headers: {
+                    apikey: import.meta.env.VITE_SUPABASE_CLIENT_ANON_KEY_API,
+                    Authorization: import.meta.env.VITE_SUPABASE_CLIENT_ANON_KEY_AUTH,
+                },
+            }
+        );
+        const ventas: RegistroCompra[] = response.data || [];
+        const ventasParaPago: VentaParaPagoGestores[] = await Promise.all(
+            ventas.map(async (v) => {
+                const gestor = v.id_gestor
+                    ? await getGestorComercialById(v.id_gestor)
+                    : null;
+                return {
+                    ...v,
+                    gestor: gestor ?? undefined,
+                    numero_orden: undefined,
+                } as VentaParaPagoGestores;
+            })
+        );
+        return ventasParaPago;
+    } catch (error) {
+        console.error("Error obteniendo registros por orden de pago:", error);
+        return [];
     }
 };
 

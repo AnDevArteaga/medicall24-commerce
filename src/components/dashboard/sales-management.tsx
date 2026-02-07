@@ -1,115 +1,60 @@
-import { useEffect, useState, useRef } from 'react'
-import { Search } from 'lucide-react'
-import {
-  getVentasCompletas,
-  VentaCompleta,
-} from '../../services/supabase/sales'
+import { useState, useEffect } from 'react'
+import { useDashboardVentas } from '../../dashboard/useDashboardVentas'
+import { useDebouncedValue } from '../../dashboard/useDebouncedValue'
+import DashboardTableHeader from './DashboardTableHeader'
+import DashboardTablePagination from './DashboardTablePagination'
 import Loader from '../ui/loader'
 
-const ITEMS_PER_PAGE = 20
+const SEARCH_DEBOUNCE_MS = 400
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+  }).format(value)
+}
+
+function formatDate(dateString: string) {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('es-CO', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 
 export default function SalesManagement() {
-  const [ventas, setVentas] = useState<VentaCompleta[]>([])
-  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalVentas, setTotalVentas] = useState(0)
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-
-  const loadVentas = async (page: number, search?: string) => {
-    setLoading(true)
-    try {
-      const result = await getVentasCompletas(page, ITEMS_PER_PAGE, search)
-      setVentas(result.data)
-      setTotalVentas(result.total)
-    } catch (error) {
-      console.error('Error cargando ventas:', error)
-      setVentas([])
-      setTotalVentas(0)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const debouncedSearch = useDebouncedValue(searchTerm, SEARCH_DEBOUNCE_MS)
 
   useEffect(() => {
-    loadVentas(currentPage, searchTerm)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage])
-
-  // Debounce para la búsqueda
-  useEffect(() => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current)
-    }
-
-    searchTimeoutRef.current = setTimeout(() => {
-      setCurrentPage(1) // Resetear a la primera página cuando se busca
-      loadVentas(1, searchTerm)
-    }, 500) // Esperar 500ms después de que el usuario deje de escribir
-
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current)
-      }
-    }
+    setCurrentPage(1)
   }, [searchTerm])
 
-  const totalPages = Math.ceil(totalVentas / ITEMS_PER_PAGE)
+  const { data: ventas, total: totalVentas, isLoading, isFetching } = useDashboardVentas(
+    currentPage,
+    debouncedSearch
+  )
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0,
-    }).format(value)
-  }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-CO', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader />
-      </div>
-    )
-  }
+  const loading = isLoading || isFetching
 
   return (
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-      {/* Header con búsqueda */}
-      <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value)
-                setCurrentPage(1)
-              }}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm sm:text-base"
-            />
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <span className="font-medium">
-              {totalVentas} venta{totalVentas !== 1 ? 's' : ''}
-            </span>
-          </div>
-        </div>
-      </div>
+      <DashboardTableHeader
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Buscar por nombre, producto, email, ciudad..."
+        right={
+          <span className="text-sm text-gray-600">
+            {totalVentas} venta{totalVentas !== 1 ? 's' : ''}
+          </span>
+        }
+      />
 
-      {/* Tabla de ventas - Responsive */}
       <div className="overflow-x-auto rounded-xl border border-gray-200">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
@@ -156,32 +101,21 @@ export default function SalesManagement() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
-            {loading ? (
+            {loading && ventas.length === 0 ? (
               <tr>
-                <td
-                  colSpan={13}
-                  className="px-6 py-12 text-center text-gray-500"
-                >
-                  <div className="flex items-center justify-center">
-                    <Loader />
-                  </div>
+                <td colSpan={13} className="px-6 py-12 text-center">
+                  <Loader />
                 </td>
               </tr>
             ) : ventas.length === 0 ? (
               <tr>
-                <td
-                  colSpan={13}
-                  className="px-6 py-12 text-center text-gray-500"
-                >
+                <td colSpan={13} className="px-6 py-12 text-center text-gray-500">
                   No se encontraron ventas
                 </td>
               </tr>
             ) : (
               ventas.map((venta) => (
-                <tr
-                  key={venta.id_compra}
-                  className="hover:bg-gray-50 transition-colors"
-                >
+                <tr key={venta.id_compra} className="hover:bg-gray-50 transition-colors">
                   <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
                     {venta.id_compra}
                   </td>
@@ -190,9 +124,7 @@ export default function SalesManagement() {
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
                     <div className="flex flex-col">
-                      <span className="font-medium">
-                        {venta.nombre_comprador || 'N/A'}
-                      </span>
+                      <span className="font-medium">{venta.nombre_comprador || 'N/A'}</span>
                       <span className="text-xs text-gray-500 sm:hidden">
                         {venta.identificacion_comprador || 'N/A'}
                       </span>
@@ -208,9 +140,7 @@ export default function SalesManagement() {
                     {venta.departamento_comprador || 'N/A'}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600">
-                    {venta.fecha_compra
-                      ? formatDate(venta.fecha_compra)
-                      : 'N/A'}
+                    {venta.fecha_compra ? formatDate(venta.fecha_compra) : 'N/A'}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm hidden md:table-cell">
                     <span className="px-2 py-1 text-xs font-medium rounded-full bg-secondary/20 text-secondary">
@@ -221,18 +151,12 @@ export default function SalesManagement() {
                     {formatCurrency(venta.total || 0)}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600 hidden lg:table-cell">
-                    <div
-                      className="max-w-xs truncate"
-                      title={venta.producto || 'N/A'}
-                    >
+                    <div className="max-w-xs truncate" title={venta.producto || 'N/A'}>
                       {venta.producto || 'N/A'}
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600 hidden xl:table-cell">
-                    <div
-                      className="max-w-xs truncate"
-                      title={venta.nombre_institucion || 'N/A'}
-                    >
+                    <div className="max-w-xs truncate" title={venta.nombre_institucion || 'N/A'}>
                       {venta.nombre_institucion || 'N/A'}
                     </div>
                   </td>
@@ -267,49 +191,12 @@ export default function SalesManagement() {
         </table>
       </div>
 
-      {/* Paginación */}
-      {totalPages > 1 && (
-        <div className="bg-gray-50 px-4 sm:px-6 py-4 border-t border-gray-200">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-xs sm:text-sm text-gray-700 text-center sm:text-left">
-              Mostrando{' '}
-              <span className="font-medium">
-                {totalVentas > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0}
-              </span>{' '}
-              a{' '}
-              <span className="font-medium">
-                {Math.min(currentPage * ITEMS_PER_PAGE, totalVentas)}
-              </span>{' '}
-              de <span className="font-medium">{totalVentas}</span> resultados
-            </div>
-            <div className="flex gap-2 items-center">
-              <button
-                onClick={() => {
-                  const newPage = Math.max(1, currentPage - 1)
-                  setCurrentPage(newPage)
-                }}
-                disabled={currentPage === 1 || loading}
-                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Anterior
-              </button>
-              <span className="px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700">
-                {currentPage} / {totalPages || 1}
-              </span>
-              <button
-                onClick={() => {
-                  const newPage = Math.min(totalPages, currentPage + 1)
-                  setCurrentPage(newPage)
-                }}
-                disabled={currentPage === totalPages || loading}
-                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Siguiente
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DashboardTablePagination
+        currentPage={currentPage}
+        totalItems={totalVentas}
+        onPageChange={setCurrentPage}
+        isLoading={loading}
+      />
     </div>
   )
 }

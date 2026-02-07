@@ -12,6 +12,7 @@ import {
   ArrowLeft,
   Users,
   Ticket,
+  Wallet,
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { supabase } from '../services/supabase/client/create-client'
@@ -22,11 +23,14 @@ import CreditManagement from '../components/dashboard/credit-management'
 import SalesManagement from '../components/dashboard/sales-management'
 import GestoresManagement from '../components/dashboard/gestores-management'
 import CodigosManagement from '../components/dashboard/codigos-management'
+import PaymentGestoresManagement from '../components/dashboard/payment-gestores-management'
 import LayoutSecondary from '../layouts/layout-secondary'
+import { useDashboardRealtimeInvalidation } from '../dashboard/useDashboardRealtimeInvalidation'
 
-type Section = 'home' | 'credits' | 'sales' | 'gestores' | 'codigos'
+type Section = 'home' | 'credits' | 'sales' | 'gestores' | 'codigos' | 'pagoGestores'
 
 export default function Dashboard() {
+  useDashboardRealtimeInvalidation()
   const navigate = useNavigate()
   const [activeSection, setActiveSection] = useState<Section>('home')
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -109,6 +113,11 @@ export default function Dashboard() {
       id: 'codigos' as Section,
       label: 'Gestión de Códigos',
       icon: Ticket,
+    },
+    {
+      id: 'pagoGestores' as Section,
+      label: 'Gestión de Pago a Gestores',
+      icon: Wallet,
     },
   ]
 
@@ -266,6 +275,8 @@ export default function Dashboard() {
                 {activeSection === 'sales' && 'Gestión de Ventas'}
                 {activeSection === 'gestores' && 'Gestión de Gestores'}
                 {activeSection === 'codigos' && 'Gestión de Códigos'}
+                {activeSection === 'pagoGestores' &&
+                  'Gestión de Pago a Gestores Comerciales'}
               </h2>
               <p className="text-sm sm:text-base text-gray-600">
                 {activeSection === 'home' &&
@@ -278,6 +289,8 @@ export default function Dashboard() {
                   'Administra los gestores comerciales del sistema'}
                 {activeSection === 'codigos' &&
                   'Administra los códigos promocionales y genera diseños con QR'}
+                {activeSection === 'pagoGestores' &&
+                  'Módulo para gestionar los pagos por las ventas realizadas'}
               </p>
             </div>
 
@@ -296,6 +309,9 @@ export default function Dashboard() {
             {activeSection === 'sales' && <SalesManagement />}
             {activeSection === 'gestores' && <GestoresManagement />}
             {activeSection === 'codigos' && <CodigosManagement />}
+            {activeSection === 'pagoGestores' && (
+              <PaymentGestoresManagement />
+            )}
           </div>
         </main>
       </div>

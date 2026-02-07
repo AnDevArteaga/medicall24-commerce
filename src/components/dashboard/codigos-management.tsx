@@ -1,7 +1,7 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import {
-  Search,
   Plus,
   Edit,
   Trash2,
@@ -11,12 +11,16 @@ import {
   Download,
 } from 'lucide-react'
 import {
-  getCodigosPromo,
   createCodigoPromo,
   updateCodigoPromo,
   deleteCodigoPromo,
   CodigoPromo,
 } from '../../services/supabase/codigos-promo'
+import { useDashboardCodigos } from '../../dashboard/useDashboardCodigos'
+import { useDebouncedValue } from '../../dashboard/useDebouncedValue'
+import { DASHBOARD_QUERY_KEYS } from '../../dashboard/constants'
+import DashboardTableHeader from './DashboardTableHeader'
+import DashboardTablePagination from './DashboardTablePagination'
 import { getGestores, Gestor } from '../../services/supabase/gestores'
 import { getProducts } from '../../services/supabase/products'
 import { Product } from '../../interfaces/product.interface'
@@ -34,34 +38,39 @@ import {
   buildPromoUrl,
 } from '../../utils/qr-generator'
 
-const ITEMS_PER_PAGE = 20
+const SEARCH_DEBOUNCE_MS = 400
 
 export default function CodigosManagement() {
+  const queryClient = useQueryClient()
   const { openModal, closeModal, isModalOpen, getModalProps } = useModal()
   const [searchParams, setSearchParams] = useSearchParams()
-  const [codigos, setCodigos] = useState<CodigoPromo[]>([])
-  const [loading, setLoading] = useState(true)
-  const [totalCodigos, setTotalCodigos] = useState(0)
   const [searchTerm, setSearchTerm] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [formLoading, setFormLoading] = useState(false)
   const [generatingDesign, setGeneratingDesign] = useState(false)
-  const [designCache, setDesignCache] = useState<Record<number, string>>({}) // Cache de diseños por ID
+  const [designCache, setDesignCache] = useState<Record<number, string>>({})
   const [originalCodigoData, setOriginalCodigoData] = useState<{
     id_producto: number
     cod_promo: string
-  } | null>(null) // Guardar valores originales al editar
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  } | null>(null)
 
-  // Obtener página actual de query params
   const currentPage = parseInt(searchParams.get('page') || '1', 10)
+  const debouncedSearch = useDebouncedValue(searchTerm, SEARCH_DEBOUNCE_MS)
 
-  // Selects data
+  useEffect(() => {
+    if (searchTerm) setSearchParams({ page: '1' })
+  }, [searchTerm])
+
+  const { data: codigos, total: totalCodigos, isLoading, isFetching, refetch } = useDashboardCodigos(
+    currentPage,
+    debouncedSearch
+  )
+  const loading = isLoading || isFetching
+
   const [gestores, setGestores] = useState<Gestor[]>([])
   const [productos, setProductos] = useState<Product[]>([])
 
-  // Form state
   const [formData, setFormData] = useState<
     Omit<CodigoPromo, 'id_codigo' | 'created_at'>
   >({
@@ -70,7 +79,7 @@ export default function CodigosManagement() {
     fecha_inicio: '',
     fecha_fin: '',
     compra_maxima: 0,
-    cuenta_compra: 0, // Siempre 0 al crear
+    cuenta_compra: 0,
     estado: true,
     id_prod_pago: 0,
     id_producto: 0,
@@ -79,68 +88,17 @@ export default function CodigosManagement() {
   })
 
   useEffect(() => {
-    loadCodigos(currentPage)
     loadSelectsData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage])
-
-  // Debounce para la búsqueda
-  useEffect(() => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current)
-    }
-
-    searchTimeoutRef.current = setTimeout(() => {
-      // Resetear a la primera página cuando se busca
-      setSearchParams({ page: '1' })
-      loadCodigos(1)
-    }, 500) // Esperar 500ms después de que el usuario deje de escribir
-
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current)
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm])
-
-  const loadCodigos = async (page: number) => {
-    setLoading(true)
-    try {
-      const result = await getCodigosPromo(page, ITEMS_PER_PAGE)
-      // Aplicar trim() al código promocional al cargar desde la base de datos
-      let filteredData = result.data.map((codigo: CodigoPromo) => ({
-        ...codigo,
-        cod_promo: codigo.cod_promo?.trim() || '',
-      }))
-
-      // Filtrar localmente si hay término de búsqueda
-      if (searchTerm && searchTerm.trim()) {
-        const search = searchTerm.toLowerCase()
-        filteredData = filteredData.filter(
-          (codigo: CodigoPromo) =>
-            codigo.cod_promo?.toLowerCase().includes(search) ||
-            codigo.fecha_inicio?.toLowerCase().includes(search) ||
-            codigo.fecha_fin?.toLowerCase().includes(search)
-        )
-      }
-
-      setCodigos(filteredData)
-      setTotalCodigos(result.total)
-    } catch (error) {
-      console.error('Error cargando códigos:', error)
-      toast.error('Error al cargar los códigos promocionales')
-      setCodigos([])
-      setTotalCodigos(0)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const totalPages = Math.ceil(totalCodigos / ITEMS_PER_PAGE)
+  }, [])
 
   const handlePageChange = (newPage: number) => {
     setSearchParams({ page: newPage.toString() })
+  }
+
+  const invalidateCodigos = () => {
+    queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEYS.codigos })
+    refetch()
   }
 
   const loadSelectsData = async () => {
@@ -187,7 +145,8 @@ export default function CodigosManagement() {
   }
 
   const generateQRAndDesign = async (
-    codigo: Omit<CodigoPromo, 'id_codigo' | 'created_at'>
+    codigo: Omit<CodigoPromo, 'id_codigo' | 'created_at'>,
+    nombreGestor?: string
   ): Promise<string> => {
     try {
       // Construir URL
@@ -208,11 +167,13 @@ export default function CodigosManagement() {
       // Obtener ruta del diseño según porcentaje
       const designPath = getDesignImagePath(codigo.procentaje_descuento)
 
-      // Plasmar QR en diseño (se calculará automáticamente centrado y más abajo)
+      // Plasmar QR en diseño (código y nombre del gestor debajo)
       const designWithQR = await generateDesignWithQR(
         qrDataUrl,
         designPath,
-        codigo.cod_promo // Pasar el código promocional para mostrarlo debajo del QR
+        codigo.cod_promo,
+        undefined,
+        nombreGestor
       )
 
       return designWithQR
@@ -258,7 +219,11 @@ export default function CodigosManagement() {
         if (debeRegenerarDiseño) {
           setGeneratingDesign(true)
           try {
-            const designDataUrl = await generateQRAndDesign(formData)
+            const designDataUrl = await generateQRAndDesign(
+              formData,
+              gestores.find((g) => g.id_gestor === formData.id_gestor)
+                ?.razon_social
+            )
             setDesignCache((prev) => ({
               ...prev,
               [editingId]: designDataUrl,
@@ -279,7 +244,7 @@ export default function CodigosManagement() {
         toast.success('Código promocional creado correctamente')
 
         // Recargar para obtener el ID del código creado
-        await loadCodigos(currentPage)
+        invalidateCodigos()
 
         // El diseño se generará automáticamente cuando se visualice el código
         // o cuando se cargue en el cache si es necesario
@@ -289,10 +254,10 @@ export default function CodigosManagement() {
       if (!editingId) {
         // Al crear, ir a la primera página para ver el nuevo código
         setSearchParams({ page: '1' })
-        await loadCodigos(1)
+        invalidateCodigos()
       } else {
         // Al editar, mantener la página actual
-        await loadCodigos(currentPage)
+        invalidateCodigos()
       }
     } catch (error: unknown) {
       console.error('Error guardando código:', error)
@@ -348,7 +313,10 @@ export default function CodigosManagement() {
     if (codigo.id_codigo && !designCache[codigo.id_codigo]) {
       try {
         setGeneratingDesign(true)
-        const designDataUrl = await generateQRAndDesign(codigo)
+        const designDataUrl = await generateQRAndDesign(
+          codigo,
+          gestores.find((g) => g.id_gestor === codigo.id_gestor)?.razon_social
+        )
         setDesignCache((prev) => ({
           ...prev,
           [codigo.id_codigo!]: designDataUrl,
@@ -379,7 +347,7 @@ export default function CodigosManagement() {
       })
 
       // Recargar códigos manteniendo la página actual
-      await loadCodigos(currentPage)
+        invalidateCodigos()
     } catch (error) {
       console.error('Error eliminando código:', error)
       toast.error('Error al eliminar el código promocional')
@@ -415,7 +383,10 @@ export default function CodigosManagement() {
       } else {
         // Generar si no está en cache
         setGeneratingDesign(true)
-        designDataUrl = await generateQRAndDesign(codigo)
+        designDataUrl = await generateQRAndDesign(
+          codigo,
+          gestores.find((g) => g.id_gestor === codigo.id_gestor)?.razon_social
+        )
         if (codigo.id_codigo) {
           setDesignCache((prev) => ({
             ...prev,
@@ -435,31 +406,14 @@ export default function CodigosManagement() {
     }
   }
 
-  // Filtrar códigos
-  const filteredCodigos = codigos.filter((codigo) => {
-    const search = searchTerm.toLowerCase()
-    return (
-      codigo.cod_promo?.toLowerCase().includes(search) ||
-      codigo.id_producto?.toString().includes(search)
-    )
-  })
-
   return (
     <div className="space-y-6">
-      {/* Header con búsqueda y botón agregar */}
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Buscar códigos promocionales..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm sm:text-base"
-              />
-            </div>
+        <DashboardTableHeader
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder="Buscar por código, producto o gestor..."
+          right={
             <button
               onClick={() => {
                 resetForm()
@@ -470,8 +424,8 @@ export default function CodigosManagement() {
               <Plus className="w-5 h-5" />
               Nuevo Código
             </button>
-          </div>
-        </div>
+          }
+        />
 
         {/* Formulario */}
         {showForm && (
@@ -683,7 +637,7 @@ export default function CodigosManagement() {
                     <Loader />
                   </td>
                 </tr>
-              ) : filteredCodigos.length === 0 ? (
+              ) : codigos.length === 0 ? (
                 <tr>
                   <td
                     colSpan={10}
@@ -693,7 +647,7 @@ export default function CodigosManagement() {
                   </td>
                 </tr>
               ) : (
-                filteredCodigos.map((codigo) => {
+                codigos.map((codigo) => {
                   const producto = productos.find(
                     (p) => p.id_producto === codigo.id_producto
                   )
@@ -795,47 +749,12 @@ export default function CodigosManagement() {
         </div>
 
         {/* Paginación */}
-        {totalPages > 1 && (
-          <div className="bg-gray-50 px-4 sm:px-6 py-4 border-t border-gray-200">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-xs sm:text-sm text-gray-700 text-center sm:text-left">
-                Mostrando{' '}
-                <span className="font-medium">
-                  {totalCodigos > 0
-                    ? (currentPage - 1) * ITEMS_PER_PAGE + 1
-                    : 0}
-                </span>{' '}
-                a{' '}
-                <span className="font-medium">
-                  {Math.min(currentPage * ITEMS_PER_PAGE, totalCodigos)}
-                </span>{' '}
-                de <span className="font-medium">{totalCodigos}</span>{' '}
-                resultados
-              </div>
-              <div className="flex gap-2 items-center">
-                <button
-                  onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1 || loading}
-                  className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  Anterior
-                </button>
-                <span className="px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700">
-                  {currentPage} / {totalPages || 1}
-                </span>
-                <button
-                  onClick={() =>
-                    handlePageChange(Math.min(totalPages, currentPage + 1))
-                  }
-                  disabled={currentPage === totalPages || loading}
-                  className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  Siguiente
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <DashboardTablePagination
+          currentPage={currentPage}
+          totalItems={totalCodigos}
+          onPageChange={handlePageChange}
+          isLoading={loading}
+        />
       </div>
 
       {/* Modal de Detalle */}

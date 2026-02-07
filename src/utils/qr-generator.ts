@@ -130,12 +130,14 @@ export const getDesignImagePath = (porcentajeDescuento: number): string => {
 
 /**
  * Plasmado del QR en el diseño usando Canvas
+ * @param nombreGestor - Opcional. Se muestra debajo del código, pequeño, gris y sin negrilla
  */
 export const generateDesignWithQR = async (
     qrUrl: string,
     designImagePath: string,
     codPromo: string,
-    qrPosition?: { x: number; y: number }
+    qrPosition?: { x: number; y: number },
+    nombreGestor?: string
 ): Promise<string> => {
     return new Promise((resolve, reject) => {
         try {
@@ -182,14 +184,22 @@ export const generateDesignWithQR = async (
                     const codigoY = qrY + qrSize + 20; // 20px debajo del QR
                     const codigoX = qrX + qrSize / 2; // Centrado debajo del QR
                     
-                    // Configurar estilo del texto
+                    // Configurar estilo del texto del código
                     ctx.font = 'bold 72px Arial, sans-serif'; // Tamaño grande y bold
-                    ctx.fillStyle = '#c2185d'; // Color magenta/magenta
+                    ctx.fillStyle = '#c2185b'; // Color magenta
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'top';
                     
                     // Dibujar el código promocional
                     ctx.fillText(codPromo, codigoX, codigoY);
+
+                    // Nombre del gestor debajo del código: más pequeño, sin negrilla, gris fuerte
+                    if (nombreGestor && nombreGestor.trim()) {
+                        const gestorY = codigoY + 70; // 50px debajo del código
+                        ctx.font = '18px Arial, sans-serif'; // Mucho más pequeño que el código
+                        ctx.fillStyle = '#4a4a4a'; // Gris fuerte
+                        ctx.fillText(nombreGestor.trim(), codigoX, gestorY);
+                    }
 
                     // Convertir canvas a base64
                     const dataUrl = canvas.toDataURL('image/png');
@@ -241,6 +251,13 @@ export const generateDesignWithQR = async (
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'top';
                     ctx.fillText(codPromo, codigoX, codigoY);
+
+                    if (nombreGestor && nombreGestor.trim()) {
+                        const gestorY = codigoY + 70;
+                        ctx.font = '18px Arial, sans-serif';
+                        ctx.fillStyle = '#4a4a4a';
+                        ctx.fillText(nombreGestor.trim(), codigoX, gestorY);
+                    }
 
                     const dataUrl = canvas.toDataURL('image/png');
                     resolve(dataUrl);

@@ -182,14 +182,14 @@ const RecoveryPasswordModal: React.FC<RecoveryPasswordModalProps> = ({
                 </div>
                 <div>
                   <span className="text-sm text-gray-600">
-                    Si no tienes acceso a tu correo electrónico, puedes
-                    solicitar una pqr para actualizarlo{' '}
+                    Si no tienes acceso a tu correo electrónico presenta una
+                    PQRS para actualizarlo{' '}
                     <a
                       href="https://www.medicall24.com/pqr"
                       target="_blank"
                       className="text-primary font-semibold underline"
                     >
-                      aquí
+                      aquí.
                     </a>
                     .
                   </span>
@@ -215,11 +215,13 @@ const RecoveryPasswordModal: React.FC<RecoveryPasswordModalProps> = ({
             <div className="space-y-4">
               <div className="text-center">
                 <KeyRound className="w-12 h-12 text-primary mx-auto mb-3" />
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  Ingresa el código y nueva contraseña
-                </h3>
+
                 <p className="text-sm text-gray-600">
-                  Hemos enviado un código a <strong>{email}</strong>
+                  Ingresa el código de recuperación que enviamos al correo
+                  electrónico:{' '}
+                  <strong className="text-primary font-semibold">
+                    {email}
+                  </strong>
                 </p>
               </div>
 
@@ -234,7 +236,7 @@ const RecoveryPasswordModal: React.FC<RecoveryPasswordModalProps> = ({
                 placeholder="Ingresa el código de 6 dígitos"
                 maxLength={6}
                 errorMessage={error && error.includes('código') ? error : null}
-                className="text-center text-lg tracking-widest uppercase"
+                className="text-center text-lg tracking-widest uppercase border-2 border-gray-300 focus:border-primary rounded-lg"
               />
 
               {/* Input nueva contraseña */}
@@ -249,7 +251,7 @@ const RecoveryPasswordModal: React.FC<RecoveryPasswordModalProps> = ({
                   togglePasswordVisibility(
                     'password',
                     showPassword,
-                    setShowPassword
+                    setShowPassword,
                   )
                 }
                 errorMessage={passwordError}
@@ -268,7 +270,7 @@ const RecoveryPasswordModal: React.FC<RecoveryPasswordModalProps> = ({
                   togglePasswordVisibility(
                     'confirmPassword',
                     showConfirmPassword,
-                    setShowConfirmPassword
+                    setShowConfirmPassword,
                   )
                 }
                 errorMessage={passwordError}
