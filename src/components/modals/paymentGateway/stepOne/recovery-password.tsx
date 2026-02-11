@@ -185,8 +185,7 @@ const RecoveryPasswordModal: React.FC<RecoveryPasswordModalProps> = ({
                     Si no tienes acceso a tu correo electrónico presenta una
                     PQRS para actualizarlo{' '}
                     <a
-                      href="https://www.medicall24.com/pqr"
-                      target="_blank"
+                      href="/pqrs"
                       className="text-primary font-semibold underline"
                     >
                       aquí.

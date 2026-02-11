@@ -12,6 +12,8 @@ const Dashboard = lazy(() => import("../pages/dashboard"))
 const Login = lazy(() => import("../pages/login"))
 const FreeTrial = lazy(() => import("../pages/freeTrial"))
 const Terms = lazy(() => import("../pages/terminos"))
+const PQRS = lazy(() => import("../pages/pqrs"))
+const PoliticaPrivacidad = lazy(() => import("../pages/politica-privacidad"))
 
 
 const routes: RouteObject[] = [
@@ -58,6 +60,14 @@ const routes: RouteObject[] = [
     {
     path: "/terminos-y-condiciones/:id",
     element: <Terms />
+  },
+  {
+    path: "/pqrs",
+    element: <PQRS />
+  },
+  {
+    path: "/politica-de-privacidad",
+    element: <PoliticaPrivacidad />
   },
 ];
 

@@ -215,11 +215,11 @@ export default function ModalPagoGestores() {
 
       await updateOrdenPagoSnapshot(orden.id, {
         comentarios: comentarios || null,
-        banco_nombre: (banco?.nombre_banco ?? gestor) ? '' : null,
-        tipo_cuenta: gestor?.tipo_cuenta ?? null,
-        numero_cuenta: gestor?.numero_cuenta_bancaria ?? null,
-        titular_cuenta: gestor?.representante_legal ?? null,
-        nit_titular: gestor?.num_identificacion ?? null,
+        banco_nombre: banco?.nombre_banco ?? undefined,
+        tipo_cuenta: gestor?.tipo_cuenta ?? undefined,
+        numero_cuenta: gestor?.numero_cuenta_bancaria ?? undefined,
+        titular_cuenta: gestor?.representante_legal ?? undefined,
+        nit_titular: gestor?.num_identificacion ?? undefined,
       })
       const snapshot = {
         banco_nombre: banco?.nombre_banco ?? '',

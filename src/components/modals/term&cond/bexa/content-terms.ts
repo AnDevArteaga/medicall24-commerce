@@ -664,7 +664,7 @@ export const termContent: TermBlock[] = [
               "En caso de que el usuario pretenda presentar una petición, queja, reclamo o solicitud, podrá enviarla por medio del siguiente link:",
               link: {
                 label: "PQRS",
-                href: "https://medicall24.com.co/pqrs/"
+                href: "/pqrs"
               }
           },
 
@@ -855,7 +855,7 @@ export const termBexaContent: TermBlock[] = [
       "Cualquier reclamación, solicitud, controversia, petición, queja o reclamo, que pueda surgir en relación con el Examen BEXA para Detectar Masas en Mama, adquirido por medio de los CANALES VIRTUALES de LA COMPAÑÍA, al igual que las solicitudes de reembolso, serán tramitadas a través de nuestro servicio de atención al cliente, utilizando el siguiente link:",
       link: {
         label: "PQRS",
-        href: "https://medicall24.com.co/pqrs/"
+        href: "/pqrs"
       }
   },
   {
@@ -1198,7 +1198,7 @@ export const termBexaContent: TermBlock[] = [
       "En caso de que el usuario pretenda presentar una petición, queja, reclamo o solicitud, podrá enviarla por medio del siguiente link: ",
       link: {
         label: "PQRS",
-        href: "https://medicall24.com.co/pqrs/"
+        href: "/pqrs"
       }
   },
   {

@@ -19,7 +19,7 @@ const Footer = () => {
                         Términos de Servicio
                     </a>
                     <a
-                        href="https://medicall24.com.co/politica-de-privacidad/"
+                        href="/politica-de-privacidad"
                         className="hover:text-pink-600 transition-colors"
                     >
                         Política de Privacidad

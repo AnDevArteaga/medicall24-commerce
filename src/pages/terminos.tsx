@@ -107,8 +107,7 @@ const TerminosPage: React.FC = () => {
                                             {" "}
                                             <a
                                                 href={block.link.href}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
+                                                {...(block.link.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                                                 className="text-blue-600 underline font-semibold"
                                             >
                                                 {block.link.label}
