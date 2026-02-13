@@ -69,6 +69,8 @@ interface PurchaseContextProps {
   setIsBuyerPatient: React.Dispatch<React.SetStateAction<boolean>>;
   idMunicipioInstitucion: number | undefined;
   setIdMunicipioInstitucion: React.Dispatch<React.SetStateAction<number | undefined>>;
+  isFree: boolean;
+  setIsFree: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const PurchaseContext = createContext<PurchaseContextProps | undefined>(undefined);
@@ -134,6 +136,7 @@ export const PurchaseProvider = ({ children }:{ children: ReactNode }) => {
     const [consultationResult, setConsultationResult] = useState<any>(null);
     const [isBuyerPatient, setIsBuyerPatient] = useState<boolean>(true);
     const [idMunicipioInstitucion, setIdMunicipioInstitucion] = useState<number | undefined>(undefined);
+    const [isFree, setIsFree] = useState<boolean>(false);
 
 
 
@@ -181,7 +184,7 @@ export const PurchaseProvider = ({ children }:{ children: ReactNode }) => {
 
   
   return (
-    <PurchaseContext.Provider value={{ isRegistered, setIsRegistered, registerData, setRegisterData,  currentStep, setCurrentStep, validations, setValidations, handleNext, handlePrevious, sliderRef, statusRegister, setStatusRegister, errors, setErrors, purchaseData, setPurchaseData, paymentMethod, setPaymentMethod, isValidPaymentMethod, setIsValidPaymentMethod, selectedMethod, setSelectedMethod, creditData, setCreditData, typesId, setTypesId, product, setProduct, generalPaymentData, setGeneralPaymentData, detailPayment, setDetailPayment, registerPurchase, setRegisterPurchase, startFetchingStatusPayment, setStartFetchingStatusPayment, message, setMessage, status, setStatus, loading, setLoading, order, setOrder, userId, setUserId, registerPurchaseSaved, setRegisterPurchaseSaved, queryParam, setQueryParam, consultationResult, setConsultationResult, isBuyerPatient, setIsBuyerPatient, idMunicipioInstitucion, setIdMunicipioInstitucion, setResizeCallback, triggerResize }}>
+    <PurchaseContext.Provider value={{ isRegistered, setIsRegistered, registerData, setRegisterData,  currentStep, setCurrentStep, validations, setValidations, handleNext, handlePrevious, sliderRef, statusRegister, setStatusRegister, errors, setErrors, purchaseData, setPurchaseData, paymentMethod, setPaymentMethod, isValidPaymentMethod, setIsValidPaymentMethod, selectedMethod, setSelectedMethod, creditData, setCreditData, typesId, setTypesId, product, setProduct, generalPaymentData, setGeneralPaymentData, detailPayment, setDetailPayment, registerPurchase, setRegisterPurchase, startFetchingStatusPayment, setStartFetchingStatusPayment, message, setMessage, status, setStatus, loading, setLoading, order, setOrder, userId, setUserId, registerPurchaseSaved, setRegisterPurchaseSaved, queryParam, setQueryParam, consultationResult, setConsultationResult, isBuyerPatient, setIsBuyerPatient, idMunicipioInstitucion, setIdMunicipioInstitucion, isFree, setIsFree, setResizeCallback, triggerResize }}>
       {children}
     </PurchaseContext.Provider>
   );

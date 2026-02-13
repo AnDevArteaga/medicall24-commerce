@@ -20,6 +20,7 @@ import {
   fetchAlliesById,
   fetchAlliesByIdMunicipality,
 } from "../services/supabase/allies";
+import { findProviderWithClosestSlot } from "../services/azure/find-closest-provider";
 import { isProductPromo } from "../guard/type-product";
 import { CodeXProduct } from "../interfaces/product.interface";
 import { Ally } from "../interfaces/allies-supabase.interface";
@@ -27,7 +28,7 @@ import { Department, Municipality } from "../interfaces/location.interfaces";
 import { registerPurchase } from "../interfaces/checkout.interfase";
 
 export const useSelectAllieExtended = () => {
-  const { registerPurchase, setRegisterPurchase, product, setIdMunicipioInstitucion } = usePurchaseContext();
+  const { registerPurchase, setRegisterPurchase, product, setIdMunicipioInstitucion, isFree } = usePurchaseContext();
   const { appointment, setAppointment, createAppointmentData, setCreateAppointmentData } = Appointment();
 
   // Estados para los selects de ubicación
@@ -51,6 +52,7 @@ export const useSelectAllieExtended = () => {
   const [loadingHours, setLoadingHours] = useState(false);
 
   const [cover, setCover] = useState<string>()
+  const [loadingClosestProvider, setLoadingClosestProvider] = useState(false)
 
   const [selectedValues, setSelectedValues] = useState({
     dpto_institucion: "",
@@ -577,6 +579,77 @@ export const useSelectAllieExtended = () => {
     setAllyProvider([]);
   };
 
+  // Auto-asignar prestador con slot más cercano cuando isFree
+  const assignClosestProvider = async () => {
+    setLoadingClosestProvider(true);
+    try {
+      const provider = await findProviderWithClosestSlot(
+        appointment.idSpecialist,
+        appointment.idTypeServices
+      );
+      if (!provider) {
+        setAllyProvider([]);
+        return;
+      }
+
+      const info = await getInstitutionInfo(provider.institutionId);
+
+      setSelectedValues((prev) => ({
+        ...prev,
+        dpto_institucion: provider.departmentId,
+        ciudad_institucion: provider.municipalityId,
+        nombre_institucion: provider.institutionId,
+        sede: provider.sede.id,
+        professional: provider.professional.id,
+        day: "",
+        hour: "",
+      }));
+
+      setAppointment((prev) => ({
+        ...prev,
+        institutionsId: provider.institutionId,
+        idSede: provider.sede.id,
+        idProfessional: provider.professional.id,
+      }));
+
+      setCreateAppointmentData((prev) => ({
+        ...prev,
+        institutionId: Number(provider.institutionId),
+        sedeId: parseInt(provider.sede.id),
+        professionalId: parseInt(provider.professional.id),
+      }));
+
+      setRegisterPurchase((prev: registerPurchase) => ({
+        ...prev,
+        nombre_institucion: provider.ally.nombre_prestador,
+        direccion_institucion: info.direccion,
+        telefono_institucio: info.telefono,
+        dpto_institucion: provider.ally.nombre_departamento ?? "",
+        ciudad_institucion: provider.ally.nombre_municipio ?? "",
+      }));
+
+      setAllyProvider([{ id: provider.institutionId, nombre: provider.ally.nombre_prestador }]);
+      setSedes([provider.sede]);
+      setProfessionals([provider.professional]);
+      setIdMunicipioInstitucion(provider.municipalityId);
+      setCover(info.cover);
+      setSelectsDisabled(true);
+
+      const daysData = await getDaysAvailable(
+        provider.institutionId,
+        appointment.idSpecialist,
+        provider.professional.id,
+        provider.sede.id,
+        appointment.idTypeServices
+      );
+      setDays(Array.isArray(daysData) ? daysData : []);
+    } catch (err) {
+      console.error("Error asignando prestador más cercano:", err);
+    } finally {
+      setLoadingClosestProvider(false);
+    }
+  };
+
   // === Effects ===
   useEffect(() => {
     const init = async () => {
@@ -584,7 +657,10 @@ export const useSelectAllieExtended = () => {
       await loadAllies();
       if (product) {
         console.log('Producto detectado:', product);
-        if (isProductPromo(product)) {
+        if (isFree && !isProductPromo(product)) {
+          console.log('Es isFree: buscando prestador con slot más cercano');
+          await assignClosestProvider();
+        } else if (isProductPromo(product)) {
           console.log('Es producto promo');
           await handlePromoProduct(product);
         } else {
@@ -597,7 +673,7 @@ export const useSelectAllieExtended = () => {
       }
     };
     init();
-  }, [product]);
+  }, [product, isFree]);
 
   useEffect(() => {
     if (selectedValues.dpto_institucion) {
@@ -611,23 +687,24 @@ export const useSelectAllieExtended = () => {
     municipalities,
     allyProvider,
     loadingAliado,
+    loadingClosestProvider,
     selectsDisabled,
-    
+
     // Estados del flujo de citas
     sedes,
     professionals,
     days,
     hours,
-    
+
     // Estados de carga
     loadingSedes,
     loadingProfessionals,
     loadingDays,
     loadingHours,
-    
+
     // Valores seleccionados
     selectedValues,
-    
+
     // Acciones
     handleSelectChange,
     reset,

@@ -8,7 +8,7 @@ export const useGetProduct = () => {
     const [searchParams] = useSearchParams();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const { setProduct, setGeneralPaymentData, product } = usePurchaseContext();
+    const { setProduct, setGeneralPaymentData, product, setIsFree } = usePurchaseContext();
 
     // Usar refs para evitar llamadas duplicadas y almacenar funciones del contexto
     const isFetchingRef = useRef(false);
@@ -27,6 +27,12 @@ export const useGetProduct = () => {
     // Memoizar los parámetros para evitar re-renders innecesarios
     const productId = useMemo(() => searchParams.get("p"), [searchParams]);
     const codeId = useMemo(() => searchParams.get("c"), [searchParams]);
+    const isFreeParam = useMemo(() => searchParams.get("isFree"), [searchParams]);
+
+    // Sincronizar isFree con el query param (isFree=true o isFree=1)
+    useEffect(() => {
+        setIsFree(isFreeParam === "true" || isFreeParam === "1");
+    }, [isFreeParam, setIsFree]);
 
     useEffect(() => {
         mountedRef.current = true;

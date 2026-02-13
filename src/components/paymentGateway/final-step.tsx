@@ -1,25 +1,28 @@
 import React from 'react'
 import { useGenerateTransaction } from '../../hooks/useGenerateTransaction'
-import { CheckCircle, Clock, XCircle, Calendar } from 'lucide-react'
+import { CheckCircle, Clock, XCircle, Calendar, Home } from 'lucide-react'
 import { OrderStatus } from '../../types/status'
 import { usePurchaseContext } from '../../contexts/checkout'
 import SeeEmail from './tutorials/see-email'
 import TutorialNequi from './tutorials/nequi'
 import { useModal } from '../../contexts/modals'
+import ButtonForm from '../ui/button-forms'
 
 const FinalStep: React.FC = () => {
-  const { status, message, selectedMethod, consultationResult } = usePurchaseContext()
+  const { status, message, selectedMethod, consultationResult } =
+    usePurchaseContext()
   const { loading } = useGenerateTransaction()
   const { openModal } = useModal()
 
   // Verificar si hay una consulta exitosa
-  const hasSuccessfulConsultation = consultationResult && 
+  const hasSuccessfulConsultation =
+    consultationResult &&
     (consultationResult.status === 200 || consultationResult.status === 201) &&
     (consultationResult.data?.success === true || consultationResult.data?.data)
 
   const handleViewConsultation = () => {
     if (consultationResult) {
-      openModal("consultationResult", { result: consultationResult })
+      openModal('consultationResult', { result: consultationResult })
     }
   }
 
@@ -78,7 +81,7 @@ const FinalStep: React.FC = () => {
           </h1>
           <p
             className={`text-xl font-medium ${getStatusColor(
-              status
+              status,
             )} text-center`}
           >
             {message}
@@ -96,16 +99,23 @@ const FinalStep: React.FC = () => {
 
         {isApproved && <SeeEmail />}
 
-        {/* Botón para ver información de la cita cuando fue asignada correctamente */}
-        {isApproved && hasSuccessfulConsultation && (
-          <div className="mt-6 flex justify-center">
-            <button
-              onClick={handleViewConsultation}
-              className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primarydark transition-colors duration-200 flex items-center gap-2 font-medium shadow-md hover:shadow-lg"
+        {/* Botones cuando la transacción fue aprobada */}
+        {isApproved && (
+          <div className="mt-6 flex flex-col sm:flex-row justify-center items-center gap-4">
+            {hasSuccessfulConsultation && (
+              <ButtonForm
+                onClick={handleViewConsultation}
+                text="Ver Consulta"
+                className="w-1/4 md:w-2/4"
+              ></ButtonForm>
+            )}
+            {/* <button
+              onClick={() => { window.location.href = '/' }}
+              className="px-6 py-3 border-2 border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition-colors duration-200 flex items-center justify-center gap-2 font-medium shadow-md hover:shadow-lg"
             >
-              <Calendar className="w-5 h-5" />
-              Ver Información de la Cita
-            </button>
+              <Home className="w-5 h-5" />
+              Regresar al Inicio
+            </button> */}
           </div>
         )}
       </div>

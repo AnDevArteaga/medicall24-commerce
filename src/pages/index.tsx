@@ -1,5 +1,7 @@
 import React from 'react'
 import Layout from '../layouts/layout-index'
+import Hero from '../components/sections/index/hero'
+import TelemedicinaConsultas from '../components/sections/index/telemedicina-consultas'
 import Bexa from '../components/sections/index/bexa-service'
 // import Main from "../components/sections/index/main";
 // import PlanesEmpresa from "../components/sections/index/plan-company";
@@ -32,6 +34,12 @@ const Home: React.FC = () => {
       />
       <Layout title="Medicall24 | Telemedicina al alcance de todos">
         <main>
+          <section>
+            <Hero />
+          </section>
+          <section>
+            <TelemedicinaConsultas />
+          </section>
           {/* <section>
                     <Main />
                 </section> */}

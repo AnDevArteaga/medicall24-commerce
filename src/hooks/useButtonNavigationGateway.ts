@@ -13,7 +13,7 @@ const useNavigationButton = (
     isUserRegistered: boolean,
     // setCurrentStep: React.Dispatch<React.SetStateAction<number>>,
 ) => {
-    const { validations, registerData, handleNext, purchaseData, paymentMethod, selectedMethod, creditData, detailPayment } = usePurchaseContext();
+    const { validations, registerData, handleNext, purchaseData, paymentMethod, selectedMethod, creditData, detailPayment, isFree } = usePurchaseContext();
     const { openModal, closeModal } = useModal();
     
     // Inicializar el estado con un valor por defecto basado en el paso inicial
@@ -40,6 +40,7 @@ const useNavigationButton = (
     const prevValuesRef = useRef<{
         currentStep?: number;
         isUserRegistered?: boolean;
+        isFree?: boolean;
         selectedMethod?: string;
         creditDataMeddipay?: string;
         registerDataStr?: string;
@@ -177,6 +178,7 @@ const useNavigationButton = (
         const currentValues = {
             currentStep,
             isUserRegistered,
+            isFree,
             selectedMethod,
             creditDataMeddipay: creditData?.meddipayAuthorizationCode || '',
             registerDataStr: JSON.stringify(registerData),
@@ -190,6 +192,7 @@ const useNavigationButton = (
         const hasRelevantChanges = 
             prevValuesRef.current.currentStep !== currentValues.currentStep ||
             prevValuesRef.current.isUserRegistered !== currentValues.isUserRegistered ||
+            prevValuesRef.current.isFree !== currentValues.isFree ||
             prevValuesRef.current.selectedMethod !== currentValues.selectedMethod ||
             prevValuesRef.current.creditDataMeddipay !== currentValues.creditDataMeddipay ||
             prevValuesRef.current.registerDataStr !== currentValues.registerDataStr ||
@@ -223,7 +226,8 @@ const useNavigationButton = (
             } else {
                 config.text = "Siguiente";
                 config.disabled = false;
-                config.onClick = handleNext;
+                // Con isFree, "Siguiente" abre directamente el modal de agendar cita (sin paso de pago)
+                config.onClick = isFree ? () => openModal("selectAllieBexa") : handleNext;
             }
         }
 
@@ -251,6 +255,7 @@ const useNavigationButton = (
         handleMeddipayValidation,
         handleVerifyEmail,
         handleNext,
+        isFree,
     ]);
 
     return buttonConfig;
