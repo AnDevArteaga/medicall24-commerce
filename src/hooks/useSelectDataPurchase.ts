@@ -40,6 +40,12 @@ const methods = [
         activeColor: "bg-white border-2 border-pink-600 ",
         textColor: "text-gray-700",
     },
+    {
+        id: "EFECTIVO",
+        label: "Efectivo",
+        activeColor: "bg-white border-2 border-pink-600",
+        textColor: "text-gray-700",
+    },
 ];
 
 export const useSelectDataPurchase = () => {
@@ -223,6 +229,7 @@ export const useSelectDataPurchase = () => {
         setCreditData((prev) => ({
             ...prev,
             meddipayAuthorizationCode: "",
+            efectivoAuthenticated: false,
         }));
         setErrors((prev) => ({
             ...prev,

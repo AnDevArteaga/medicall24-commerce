@@ -31,6 +31,7 @@ interface UsuarioData {
   nombre_usuario?: string
   correo_usuario?: string
   correo_comprador?: string
+  id_producto?: number
 }
 
 interface CreditManagementProps {
@@ -53,11 +54,12 @@ export default function CreditManagement({
   const [loadingPageUsers, setLoadingPageUsers] = useState(false)
   const [data, setData] = useState<UsuarioData[]>([])
   const [dataUsers, setDataUsers] = useState<GestionUsuarioCreditoResponse[]>(
-    []
+    [],
   )
   const [currentPage, setCurrentPage] = useState(1)
   const [currentPageUsers, setCurrentPageUsers] = useState(1)
-  const [initialNonGestionadosCount, setInitialNonGestionadosCount] = useState(0)
+  const [initialNonGestionadosCount, setInitialNonGestionadosCount] =
+    useState(0)
   const [formData, setFormData] = useState<{
     identificacion_usuario: string
     id_producto: string
@@ -84,9 +86,8 @@ export default function CreditManagement({
 
   useEffect(() => {
     const obtenerUID = async () => {
-      const { supabase } = await import(
-        '../../services/supabase/client/create-client'
-      )
+      const { supabase } =
+        await import('../../services/supabase/client/create-client')
       const { data } = await supabase.auth.getSession()
       const uid = data?.session?.user?.id
       if (uid) {
@@ -112,17 +113,21 @@ export default function CreditManagement({
     const response = await getGestionUsuarioCredito()
     const users = response?.data || []
     setDataUsers(users)
-    
+
     // Calcular el número de registros no gestionados para el contador inicial
-    const nonGestionadosCount = users.filter((user) => !user.gestionado && !user.negado).length
+    const nonGestionadosCount = users.filter(
+      (user) => !user.gestionado && !user.negado,
+    ).length
     setInitialNonGestionadosCount(nonGestionadosCount)
-    
+
     setLoadingPageUsers(false)
   }
 
   // Actualizar el contador inicial cuando cambien los datos
   useEffect(() => {
-    const nonGestionadosCount = dataUsers.filter((user) => !user.gestionado && !user.negado).length
+    const nonGestionadosCount = dataUsers.filter(
+      (user) => !user.gestionado && !user.negado,
+    ).length
     if (nonGestionadosCount !== initialNonGestionadosCount) {
       setInitialNonGestionadosCount(nonGestionadosCount)
     }
@@ -130,20 +135,23 @@ export default function CreditManagement({
   }, [dataUsers])
 
   // Callbacks memoizados para las notificaciones en tiempo real
-  const handleNewNotification = useCallback((newRecord: GestionUsuarioCreditoResponse) => {
-    // Actualizar la tabla cuando llegue una nueva notificación
-    getDataUsers()
-    // Solo mostrar toast si estamos en el tab de usuarios
-    if (activeTab === 'users') {
-      toast.success(
-        `Nueva solicitud de crédito: ${newRecord.nombre_comprador}`,
-        {
-          icon: '🔔',
-          duration: 3000,
-        }
-      )
-    }
-  }, [activeTab])
+  const handleNewNotification = useCallback(
+    (newRecord: GestionUsuarioCreditoResponse) => {
+      // Actualizar la tabla cuando llegue una nueva notificación
+      getDataUsers()
+      // Solo mostrar toast si estamos en el tab de usuarios
+      if (activeTab === 'users') {
+        toast.success(
+          `Nueva solicitud de crédito: ${newRecord.nombre_comprador}`,
+          {
+            icon: '🔔',
+            duration: 3000,
+          },
+        )
+      }
+    },
+    [activeTab],
+  )
 
   const handleUpdate = useCallback(() => {
     // Actualizar la tabla cuando se actualice un registro
@@ -169,16 +177,44 @@ export default function CreditManagement({
     getDataUsers()
   }, [])
 
+  // Nombre de producto por id para búsqueda en Créditos Aprobados
+  const getProductNameForSearch = (idProducto: string | number): string => {
+    const id =
+      typeof idProducto === 'string' ? parseInt(idProducto, 10) : idProducto
+    const names: Record<number, string> = {
+      17: 'examen bexa para detectar masas en mama',
+      16: 'paquete de servicios complementarios para detectar cáncer de mama',
+    }
+    return names[id] || ''
+  }
+
   const filteredData = useMemo(() => {
     if (!data) return []
 
-    const lowerSearch = searchTerm.toLowerCase()
+    const lowerSearch = searchTerm.toLowerCase().trim()
+    if (!lowerSearch) return data
 
-    return data.filter(
-      (item) =>
-        item.identificacion_usuario?.toLowerCase().includes(lowerSearch) ||
-        item.codigo_credito?.toLowerCase().includes(lowerSearch)
-    )
+    return data.filter((item: UsuarioData) => {
+      const identificacion = String(
+        item.identificacion_usuario ?? '',
+      ).toLowerCase()
+      const codigo = String(item.codigo_credito ?? '').toLowerCase()
+      const nombre = String(item.nombre_usuario ?? '').toLowerCase()
+      const correo = String(
+        item.correo_usuario ?? item.correo_comprador ?? '',
+      ).toLowerCase()
+      const idProducto =
+        item.id_producto != null ? String(item.id_producto) : ''
+      const productName = getProductNameForSearch(item.id_producto ?? '')
+      return (
+        identificacion.includes(lowerSearch) ||
+        codigo.includes(lowerSearch) ||
+        nombre.includes(lowerSearch) ||
+        correo.includes(lowerSearch) ||
+        idProducto.includes(lowerSearch) ||
+        productName.includes(lowerSearch)
+      )
+    })
   }, [data, searchTerm])
 
   const paginatedData = useMemo(() => {
@@ -190,15 +226,42 @@ export default function CreditManagement({
   const filteredDataUsers = useMemo(() => {
     if (!dataUsers) return []
 
-    const lowerSearch = searchTermUsers.toLowerCase()
+    const lowerSearch = searchTermUsers.toLowerCase().trim()
+    if (!lowerSearch) {
+      const orderByStatus = (item: GestionUsuarioCreditoResponse): number => {
+        if (item.negado) return 3
+        if (!item.gestionado && !item.negado) return 1
+        if (item.gestionado && !item.negado) return 2
+        return 1
+      }
+      return [...dataUsers].sort((a, b) => {
+        const statusA = orderByStatus(a)
+        const statusB = orderByStatus(b)
+        if (statusA !== statusB) return statusA - statusB
+        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0
+        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0
+        return dateB - dateA
+      })
+    }
 
-    const filtered = dataUsers.filter(
-      (item) =>
-        item.identificacion?.toString().includes(lowerSearch) ||
-        item.nombre_comprador?.toLowerCase().includes(lowerSearch) ||
-        item.correo_comprador?.toLowerCase().includes(lowerSearch) ||
-        item.telefono_comprador?.toString().includes(lowerSearch)
-    )
+    const filtered = dataUsers.filter((item: GestionUsuarioCreditoResponse) => {
+        const itemAny = item as GestionUsuarioCreditoResponse & { identificacion_usuario?: string }
+        const identificacion = String(
+          item.identificacion ?? itemAny.identificacion_usuario ?? '',
+        ).toLowerCase()
+        const nombre = String(item.nombre_comprador ?? '').toLowerCase()
+        const correo = String(item.correo_comprador ?? '').toLowerCase()
+        const telefono = String(item.telefono_comprador ?? '').toLowerCase()
+        const credito =
+          item.credito_aprobado != null ? String(item.credito_aprobado) : ''
+        return (
+          identificacion.includes(lowerSearch) ||
+          nombre.includes(lowerSearch) ||
+          correo.includes(lowerSearch) ||
+          telefono.includes(lowerSearch) ||
+          credito.includes(lowerSearch)
+        )
+    })
 
     const orderByStatus = (item: GestionUsuarioCreditoResponse): number => {
       if (item.negado) return 3
@@ -234,7 +297,7 @@ export default function CreditManagement({
   }, [searchTermUsers])
 
   const handleFormChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
@@ -279,7 +342,7 @@ export default function CreditManagement({
     }
 
     const userToUpdate = dataUsers.find(
-      (u) => u.identificacion.toString() === formData.identificacion_usuario
+      (u) => u.identificacion.toString() === formData.identificacion_usuario,
     )
 
     const formDataWithNombre: {
@@ -315,12 +378,12 @@ export default function CreditManagement({
       try {
         await updateGestionadoByIdentificacion(
           formData.identificacion_usuario,
-          true
+          true,
         )
         await getDataUsers()
         await sendEmailAuthorization(
           formData.correo_comprador,
-          formData.codigo_credito
+          formData.codigo_credito,
         )
       } catch (error) {
         console.error('Error al actualizar gestionado:', error)
@@ -459,7 +522,7 @@ export default function CreditManagement({
           onOpenNegarModal={(
             id: number,
             email: string,
-            nombreComprador: string
+            nombreComprador: string,
           ) => {
             openModal('confirmNegar', {
               id,
@@ -500,7 +563,7 @@ export default function CreditManagement({
                   await getDataUsers()
                   closeModal('confirmNegar')
                   toast.success(
-                    'Solicitud negada y correo enviado correctamente'
+                    'Solicitud negada y correo enviado correctamente',
                   )
                 } catch (error) {
                   console.error('Error al negar solicitud:', error)

@@ -63,7 +63,7 @@ export interface registerPurchase {
   compra_cancelada: boolean,
   id_cita_medicall: number,
   estado_cuenta: boolean,
-  tipopersona_factura: number,
+  tipopersona_factura: number | string,
   tipoid_factura: string,
   numid_factura: string,
   dv_factura: string,
@@ -84,6 +84,10 @@ export interface registerPurchase {
   link_terminos: string,
   link_pasos: string,
   id_paciente?: number,
+  /** NIT o identificación del prestador (para pago efectivo / agente recaudador) */
+  identificacion_prestador?: string,
+  /** Email del agente recaudador que autenticó (pago efectivo) */
+  agente_efectivo_email?: string,
 }
 
 
@@ -94,6 +98,8 @@ export interface BankPse {
 
 export interface CreditData {
   meddipayAuthorizationCode: string;
+  /** Autenticación exitosa del agente recaudador (pago efectivo) */
+  efectivoAuthenticated?: boolean;
 }
 
 

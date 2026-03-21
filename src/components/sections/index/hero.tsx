@@ -26,7 +26,11 @@ const Hero: React.FC = () => {
         </p>
 
         <a
-          href=""
+          href="#especialidades"
+          onClick={(e) => {
+            e.preventDefault()
+            document.getElementById('especialidades')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }}
           className="flex items-center gap-3 bg-secondary rounded-2xl px-6 py-2 shadow-lg hover:opacity-95 w-full max-w-md"
         >
           <span className="flex-shrink-0 w-20 h-20 px-2 rounded-xl overflow-hidden bg-green-500 flex items-center justify-center">

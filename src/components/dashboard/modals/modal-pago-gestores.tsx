@@ -235,6 +235,8 @@ export default function ModalPagoGestores() {
       )
       setBankDisplay(snapshot)
       toast.success('Comentarios y datos guardados')
+      props?.onClose?.()
+      closeModal(MODAL_NAME)
     } catch (e) {
       console.error(e)
       toast.error('Error al guardar')

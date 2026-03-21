@@ -6,4 +6,6 @@ export interface Validations {
     meddipayAuthorizationCode: boolean;
     emailBillingValid: boolean;
     termBillingAcept: boolean;
+    /** Facturación electrónica completada y guardada */
+    billingCompleted: boolean;
 }

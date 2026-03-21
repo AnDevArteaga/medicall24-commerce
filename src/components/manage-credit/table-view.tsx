@@ -56,7 +56,7 @@ const TableView: React.FC<TableViewProps> = ({
             />
             <input
               type="text"
-              placeholder="Buscar por identificación o código..."
+              placeholder="Buscar por identificación, código, nombre, correo o producto..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"

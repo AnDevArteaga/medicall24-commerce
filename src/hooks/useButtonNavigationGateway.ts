@@ -43,6 +43,7 @@ const useNavigationButton = (
         isFree?: boolean;
         selectedMethod?: string;
         creditDataMeddipay?: string;
+        creditDataEfectivo?: boolean;
         registerDataStr?: string;
         purchaseDataStr?: string;
         paymentMethodStr?: string;
@@ -83,10 +84,17 @@ const useNavigationButton = (
                 console.error("Error al validar código:", error);
                 toast.error("Error al validar el código de autorización");
             }
+        } else if (selectedMethod === "EFECTIVO") {
+            // Si facturación no está completa, abrir modal y no ejecutar la acción
+            if (!validations.billingCompleted) {
+                openModal("billingData");
+                return;
+            }
+            executeAction('nextStepTwo');
         } else {
             executeAction('nextStepTwo');
         }
-    }, [selectedMethod, creditData.meddipayAuthorizationCode, registerData.user.identification, executeAction]);
+    }, [selectedMethod, creditData.meddipayAuthorizationCode, registerData.user.identification, executeAction, validations.billingCompleted, openModal]);
 
     const handleVerifyEmail = useCallback(() => {
         openModal("verifiyEmail");
@@ -126,6 +134,8 @@ const useNavigationButton = (
                     return validateFields(creditData, [
                         "meddipayAuthorizationCode",
                     ], true);
+                case "EFECTIVO":
+                    return creditData.efectivoAuthenticated === true;
                 default:
                     return true;
             }
@@ -160,7 +170,7 @@ const useNavigationButton = (
                 "valor",
                 "subtotal",
                 "total",
-            ], true) || (selectedMethod === "MEDDIPAY" && (!creditData.meddipayAuthorizationCode || creditData.meddipayAuthorizationCode.trim() === "")),
+            ], true) || (selectedMethod === "MEDDIPAY" && (!creditData.meddipayAuthorizationCode || creditData.meddipayAuthorizationCode.trim() === "")) || (selectedMethod === "EFECTIVO" && !creditData.efectivoAuthenticated),
         };
     }, [
         isUserRegistered,
@@ -181,6 +191,7 @@ const useNavigationButton = (
             isFree,
             selectedMethod,
             creditDataMeddipay: creditData?.meddipayAuthorizationCode || '',
+            creditDataEfectivo: creditData?.efectivoAuthenticated,
             registerDataStr: JSON.stringify(registerData),
             purchaseDataStr: JSON.stringify(purchaseData),
             paymentMethodStr: JSON.stringify(paymentMethod),
@@ -195,6 +206,7 @@ const useNavigationButton = (
             prevValuesRef.current.isFree !== currentValues.isFree ||
             prevValuesRef.current.selectedMethod !== currentValues.selectedMethod ||
             prevValuesRef.current.creditDataMeddipay !== currentValues.creditDataMeddipay ||
+            prevValuesRef.current.creditDataEfectivo !== currentValues.creditDataEfectivo ||
             prevValuesRef.current.registerDataStr !== currentValues.registerDataStr ||
             prevValuesRef.current.purchaseDataStr !== currentValues.purchaseDataStr ||
             prevValuesRef.current.paymentMethodStr !== currentValues.paymentMethodStr ||

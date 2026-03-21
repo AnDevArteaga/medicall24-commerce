@@ -1,6 +1,7 @@
 import axios from "axios";
 import { apiSupabase } from "../config/apis";
 import { buildOrIlikeFilter, appendSearchParam } from "../../dashboard/utils";
+import { getGestorIdsByRazonSocial } from "./gestores";
 
 export interface RegistroCompra {
     id_compra: number;
@@ -53,6 +54,8 @@ export interface RegistroCompra {
     link_ayuda: string;
     link_terminos: string;
     link_pasos: string;
+    /** Email del agente recaudador (pago efectivo) */
+    agente_efectivo_email?: string;
 }
 
 export interface CodigoPromo {
@@ -287,7 +290,7 @@ const PAGO_GESTORES_SEARCH_COLUMNS = [
     "identificacion_comprador",
 ] as const;
 
-/** Obtener ventas filtradas para el módulo de pago a gestores: APPROVED, id_gestor > 0, id_codigo_promo > 0. Búsqueda en BD. */
+/** Obtener ventas filtradas para el módulo de pago a gestores: APPROVED, id_gestor > 0, id_codigo_promo > 0. Búsqueda en BD (producto, gestor, %). */
 export const getVentasParaPagoGestores = async (
     page: number = 1,
     limit: number = 20,
@@ -299,12 +302,27 @@ export const getVentasParaPagoGestores = async (
         const to = offset + limit - 1;
 
         let url = `${apiSupabase}/registro_compra?select=*&estado_transaccion=eq.APPROVED&id_gestor=gt.0&id_codigo_promo=gt.0&order=fecha_compra.desc&limit=${limit}&offset=${offset}`;
-        if (searchTerm?.trim()) {
-            const orFilter = buildOrIlikeFilter(
-                [...PAGO_GESTORES_SEARCH_COLUMNS],
-                searchTerm
+        const term = searchTerm?.trim() ?? "";
+
+        if (term) {
+            const safe = term.replace(/%/g, "").replace(/\*/g, "");
+            const numericMatch = safe.match(/^\d+$/);
+            const porcentajeNum = numericMatch ? parseInt(numericMatch[0], 10) : null;
+
+            const orParts: string[] = [...PAGO_GESTORES_SEARCH_COLUMNS].map(
+                (col) => `${col}.ilike.*${safe}*`
             );
-            url = appendSearchParam(url, orFilter);
+            const gestorIds = await getGestorIdsByRazonSocial(term);
+            if (gestorIds.length > 0) {
+                orParts.push(`id_gestor.in.(${gestorIds.join(",")})`);
+            }
+            if (orParts.length > 0) {
+                url = appendSearchParam(url, `(${orParts.join(",")})`);
+            }
+            if (porcentajeNum != null && porcentajeNum >= 0 && porcentajeNum <= 100) {
+                const sep = url.includes("?") ? "&" : "?";
+                url = `${url}${sep}porcentaje_comision_gestor=eq.${porcentajeNum}`;
+            }
         }
 
         const response = await axios.get(url, {

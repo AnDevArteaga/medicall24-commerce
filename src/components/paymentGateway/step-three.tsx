@@ -3,7 +3,8 @@ import { usePurchaseContext } from "../../contexts/checkout";
 import { formatNumber } from "../../utils/format";
 
 const StepThree: React.FC = () => {
-    const { product, detailPayment, selectedMethod } = usePurchaseContext();
+    const { product, detailPayment, selectedMethod, generalPaymentData } =
+        usePurchaseContext();
     const getProductName = () => {
         if (!product) return "Sin producto";
         return "nombre" in product ? product.nombre : product.producto;
@@ -36,7 +37,34 @@ const StepThree: React.FC = () => {
                 </span>
             </div>
 
-            {/* Subtotal */}
+            {/* Valor lista (si hay descuento, se muestra antes del subtotal neto) */}
+            {Number(detailPayment.descuento) > 0 && (
+                <div className="flex justify-between items-center py-3 px-4 bg-gray-50 rounded-lg mb-2 border border-dashed border-gray-300">
+                    <span className="text-gray-700 font-medium">
+                        Precio del producto
+                    </span>
+                    <span className="text-gray-600">
+                        ${formatNumber(Number(detailPayment.valor) || 0)} COP
+                    </span>
+                </div>
+            )}
+
+            {/* Descuento (código promocional) */}
+            {Number(detailPayment.descuento) > 0 && (
+                <div className="flex justify-between items-center py-3 px-4 bg-amber-50 rounded-lg mb-2 border border-amber-100">
+                    <span className="text-amber-900 font-medium">
+                        Descuento
+                        {generalPaymentData.discount
+                            ? ` (${generalPaymentData.discount}%)`
+                            : ""}
+                    </span>
+                    <span className="text-amber-800 font-semibold">
+                        -${formatNumber(Number(detailPayment.descuento))} COP
+                    </span>
+                </div>
+            )}
+
+            {/* Subtotal (neto tras descuento, o igual al API para otros métodos) */}
             <div className="flex justify-between bg-gray-100 items-center py-3 px-4 bg-gray-50 rounded-lg mb-2 hover:bg-gray-200 transition">
                 <span className="text-gray-700 font-medium">Sub total</span>$
                 {

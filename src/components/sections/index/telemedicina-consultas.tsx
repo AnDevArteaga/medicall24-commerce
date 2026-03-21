@@ -25,7 +25,7 @@ const TelemedicinaConsultas: React.FC = () => {
     navigate(`/pagos?p=${PRODUCTO_CONSULTA_GRATUITA}&isFree=true`)
   }
   return (
-    <section className="flex flex-col lg:flex-row xl:flex-row items-center justify-center gap-12 lg:gap-16 xl:gap-16 px-8 py-16 bg-white">
+    <section id="especialidades" className="flex flex-col lg:flex-row xl:flex-row items-center justify-center gap-12 lg:gap-16 xl:gap-16 px-8 py-16 bg-white">
       {/* Columna izquierda */}
       <div className="flex flex-col max-w-xl w-full">
         <div className="rounded-4xl overflow-hidden border-2 border-primary">

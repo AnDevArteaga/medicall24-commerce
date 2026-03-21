@@ -119,6 +119,28 @@ export const deleteGestor = async (id: number): Promise<number | undefined> => {
     }
 };
 
+/** Obtener ids de gestores cuyo razon_social coincida con el término (para búsqueda en pago gestores). */
+export const getGestorIdsByRazonSocial = async (searchTerm: string): Promise<number[]> => {
+    try {
+        const term = searchTerm.trim().replace(/%/g, '').replace(/\*/g, '');
+        if (!term) return [];
+        const response = await axios.get(
+            `${apiSupabase}/gestor_comercial?select=id_gestor&razon_social=ilike.*${encodeURIComponent(term)}*`,
+            {
+                headers: {
+                    apikey: import.meta.env.VITE_SUPABASE_CLIENT_ANON_KEY_API,
+                    Authorization: import.meta.env.VITE_SUPABASE_CLIENT_ANON_KEY_AUTH,
+                },
+            }
+        );
+        const list = Array.isArray(response.data) ? response.data : [];
+        return list.map((r: { id_gestor: number }) => r.id_gestor).filter((id: number) => id != null);
+    } catch (error) {
+        console.error("Error buscando gestores por razón social:", error);
+        return [];
+    }
+};
+
 // Obtener un gestor por ID
 export const getGestorById = async (id: number): Promise<Gestor | null> => {
     try {

@@ -16,7 +16,7 @@ import { useSavePurchaseData } from "./useSavePurchaseData";
 import { updateAuthorizationData } from "../services/supabase/manage-credit";
 import { capitalize } from "../utils/forms";
 import { getDepartments, getMunicipalities } from "../services/azure/location";
-import { createConsultation } from "../services/supabase/payment";
+import { createConsultation, sendConfirmationEmail } from "../services/supabase/payment";
 
 
 type ButtonId = "nextStepTwo" | "paidStepThree" | "confirmar" | string;
@@ -26,6 +26,7 @@ type PaymentMethod =
     | "PSE"
     | "NEQUI"
     | "MEDDIPAY"
+    | "EFECTIVO"
     | string;
 
 type ActionFunction = () => Promise<void>;
@@ -203,9 +204,10 @@ export const usePaymentFlow = () => {
                 // Para MEDDIPAY, establecer estado como aprobada (pero el estado en BD será APPROVED)
                 setStatus("aprobada");
                 setMessage("Compra aprobada");
-                // Para MEDDIPAY, no se crea transacción, se usa un order especial
+                // id_transaccion único por compra para que el backend (obtener la cita) devuelva una sola fila
+                const meddipayIdTransaccion = `MEDDIPAY_${Date.now()}`;
                 const meddipayOrder = {
-                    id_transaccion: "MEDDIPAY",
+                    id_transaccion: meddipayIdTransaccion,
                     estado_transaccion: "APPROVED",
                     fecha_compra: new Date().toISOString(),
                     fecha_pago: new Date().toISOString(),
@@ -224,11 +226,16 @@ export const usePaymentFlow = () => {
                 const savePurchaseResult = await savePurchase(registerPruchase, idMunicipioInstitucion);
                 await updateAuthorizationData(creditData.meddipayAuthorizationCode);
 
-                // Crear consulta después de guardar la compra (para MEDDIPAY usa "MEDDIPAY" como identificador)
+                const idCompra = savePurchaseResult?.id_compra;
+                console.log("[MEDDIPAY] savePurchaseResult.id_compra:", idCompra, "savePurchaseResult:", savePurchaseResult);
+                if (idCompra) {
+                    await sendConfirmationEmail(idCompra, meddipayIdTransaccion);
+                } else {
+                    console.warn("[MEDDIPAY] No hay id_compra, no se envía correo de confirmación");
+                }
+                // Crear consulta después del correo de confirmación
                 try {
-                    // Obtener el id_compra del resultado de savePurchase
-                    const idCompra = savePurchaseResult?.id_compra;
-                    const consultation = await createConsultation("MEDDIPAY", idCompra);
+                    const consultation = await createConsultation(meddipayIdTransaccion, idCompra);
                     
                     // Verificar si la consulta fue exitosa
                     if (consultation.error || (consultation.status !== 200 && consultation.status !== 201)) {
@@ -281,6 +288,93 @@ export const usePaymentFlow = () => {
                         data: {
                             error: errorMessage
                         }
+                    });
+                }
+
+                setTimeout(() => {
+                    handleNext();
+                }, 1000);
+                closeModal("verifiyEmail");
+                setLoading(false);
+            },
+        },
+        EFECTIVO: {
+            nextStepTwo: async () => {
+                setLoading(true);
+                handleSetterDetailPayment();
+                closeModal("selectAllieBexa");
+                handleNext();
+                setLoading(false);
+            },
+            paidStepThree: async () => {
+                setLoading(true);
+                setStatus("aprobada");
+                setMessage("Compra aprobada");
+                // id_transaccion único por compra para que el backend (obtener la cita) devuelva una sola fila
+                const efectivoIdTransaccion = `EFECTIVO_${Date.now()}`;
+                const efectivoOrder = {
+                    id_transaccion: efectivoIdTransaccion,
+                    estado_transaccion: "APPROVED",
+                    fecha_compra: new Date().toISOString(),
+                    fecha_pago: new Date().toISOString(),
+                    ip_transaccion: "0",
+                };
+                const registerPruchase = await fillRegisterPurchase(
+                    userId,
+                    purchaseData,
+                    paymentMethod,
+                    detailPayment,
+                    product,
+                    registerPurchase,
+                    efectivoOrder,
+                );
+                const savePurchaseResult = await savePurchase(registerPruchase, idMunicipioInstitucion);
+
+                const idCompra = savePurchaseResult?.id_compra;
+                console.log("[EFECTIVO] savePurchaseResult.id_compra:", idCompra, "savePurchaseResult:", savePurchaseResult);
+                if (idCompra) {
+                    await sendConfirmationEmail(idCompra, efectivoIdTransaccion);
+                } else {
+                    console.warn("[EFECTIVO] No hay id_compra, no se envía correo de confirmación");
+                }
+                try {
+                    const consultation = await createConsultation(efectivoIdTransaccion, idCompra);
+
+                    if (consultation.error || (consultation.status !== 200 && consultation.status !== 201)) {
+                        const errorMessage = consultation.data?.error ||
+                            (typeof consultation.data === 'object' && consultation.data !== null && 'error' in consultation.data
+                                ? String(consultation.data.error)
+                                : 'Error al crear la consulta');
+                        console.error("❌ [EFECTIVO] Error en respuesta:", errorMessage);
+                        setConsultationResult({
+                            ...consultation,
+                            error: true,
+                            data: {
+                                ...consultation.data,
+                                error: errorMessage
+                            }
+                        });
+                    } else {
+                        setConsultationResult(consultation);
+                    }
+                } catch (error: unknown) {
+                    console.error("❌ [EFECTIVO] Error creando consulta:", error);
+                    let errorMessage = 'Ocurrió un error al crear la consulta. Por favor comparte este error con soporte.';
+                    if (error && typeof error === 'object' && 'response' in error) {
+                        const axiosError = error as { response?: { data?: { error?: string } } };
+                        if (axiosError.response?.data?.error) {
+                            errorMessage = axiosError.response.data.error;
+                        }
+                    } else if (error && typeof error === 'object' && 'message' in error) {
+                        const errorWithMessage = error as { message?: string };
+                        if (errorWithMessage.message) errorMessage = errorWithMessage.message;
+                    } else if (typeof error === 'string') {
+                        errorMessage = error;
+                    }
+                    setConsultationResult({
+                        status: 500,
+                        error: true,
+                        data: { error: errorMessage }
                     });
                 }
 
@@ -424,6 +518,7 @@ export async function fillRegisterPurchase(
         iva: Number(detailPayment.iva),
         metodo_pago: paymentMethod.type,
         nombre_comprador: capitalize(`${purchaseData.names} ${purchaseData.lastNames}`.trim()),
+        ...(paymentMethod.type === "EFECTIVO" && registerPurchase.agente_efectivo_email && { agente_efectivo_email: registerPurchase.agente_efectivo_email }),
         pais_institucion: "COLOMBIA",
         porcentaje_comision_gestor: porcentaje_gestor,
         producto: getProductName(),

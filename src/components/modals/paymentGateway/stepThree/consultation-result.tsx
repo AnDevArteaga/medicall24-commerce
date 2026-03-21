@@ -40,21 +40,82 @@ const ConsultationResultModal: React.FC<ConsultationResultModalProps> = ({
     ? parseData(responseData.data)
     : null
 
-  // Extraer información relevante
-  const appointmentData = parsedDataField || responseData
-  const appointmentId = appointmentData?.id
-  const appointmentDate = appointmentData?.fecha || appointmentData?.desiredDate
-  const appointmentState = appointmentData?.state
+  // Soporte para API que devuelve la cita en result.data.cita
+  const citaFromApi = responseData?.cita ? parseData(responseData.cita) : null
+
+  // create-consultation Edge devuelve la cita en apiResponse como string JSON
+  const citaFromApiResponse = responseData?.apiResponse
+    ? parseData(responseData.apiResponse)
+    : null
+
+  // Extraer información relevante (incluir cita si viene en data, cita o apiResponse)
+  const appointmentData =
+    parsedDataField || citaFromApi || citaFromApiResponse || responseData
+  const appointmentId =
+    appointmentData?.id ??
+    appointmentData?.id_cita ??
+    responseData?.id ??
+    citaFromApi?.id
+  const appointmentDate =
+    appointmentData?.fecha ||
+    appointmentData?.desiredDate ||
+    appointmentData?.fecha_cita ||
+    responseData?.fecha ||
+    citaFromApi?.fecha
+  const appointmentState =
+    appointmentData?.state ??
+    appointmentData?.estado ??
+    responseData?.state ??
+    citaFromApi?.state
   const successMessage = responseData?.message || result?.message
 
-  // Extraer mensaje de error si existe
-  const errorMessage =
+  // Depuración: ver qué llega al modal y por qué no se muestra la info
+  console.log('[CONSULTATION MODAL] result:', result)
+  console.log('[CONSULTATION MODAL] responseData (result.data):', responseData)
+  console.log(
+    '[CONSULTATION MODAL] parsedDataField (responseData.data):',
+    parsedDataField,
+  )
+  console.log(
+    '[CONSULTATION MODAL] citaFromApi (responseData.cita):',
+    citaFromApi,
+  )
+  console.log(
+    '[CONSULTATION MODAL] appointmentData (origen usado):',
+    appointmentData,
+  )
+  console.log('[CONSULTATION MODAL] appointmentId:', appointmentId)
+  console.log('[CONSULTATION MODAL] appointmentDate:', appointmentDate)
+  console.log('[CONSULTATION MODAL] appointmentState:', appointmentState)
+  console.log(
+    '[CONSULTATION MODAL] ¿éxito HTTP? (status 200/201):',
+    result?.status === 200 || result?.status === 201,
+  )
+
+  // Extraer mensaje de error y normalizarlo (evitar mostrar "Error API: Bad Request - {...}")
+  const rawError =
     responseData?.error ||
     (typeof responseData === 'object' &&
     responseData !== null &&
     'error' in responseData
       ? String(responseData.error)
       : null)
+
+  const normalizeErrorMessage = (err: string | null): string | null => {
+    if (!err || typeof err !== 'string') return err ?? null
+    // Si el texto contiene JSON con "message", extraerlo para mostrarlo limpio
+    const jsonMatch = err.match(/\{"name"[^}]*"message"\s*:\s*"([^"]+)"/)
+    if (jsonMatch?.[1]) return jsonMatch[1]
+    try {
+      const parsed = JSON.parse(err)
+      if (parsed?.message) return String(parsed.message)
+    } catch {
+      // no es JSON
+    }
+    return err
+  }
+
+  const errorMessage = normalizeErrorMessage(rawError)
 
   const isSuccess =
     (result?.status === 200 ||
@@ -72,6 +133,7 @@ const ConsultationResultModal: React.FC<ConsultationResultModalProps> = ({
     if (!dateString) return 'No disponible'
     try {
       return new Date(dateString).toLocaleString('es-CO', {
+        timeZone: 'America/Bogota',
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -163,7 +225,7 @@ const ConsultationResultModal: React.FC<ConsultationResultModalProps> = ({
                       <span className="font-medium text-gray-800">
                         Fecha y Hora:
                       </span>{' '}
-                      {formatDate(appointmentDate)}
+                      {formatDate(appointmentDate.split('Z')[0])}
                     </p>
                   )}
                   {appointmentState && (

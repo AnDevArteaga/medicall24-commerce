@@ -27,9 +27,12 @@ export const useBillingForm = () => {
         }));
       }
     }
+    const finalValue = name === "tipopersona_factura" && (value === "0" || value === "1")
+      ? parseInt(value, 10)
+      : value;
     setRegisterPurchase((prev: any) => ({
       ...prev,
-      [name]: value,
+      [name]: finalValue,
     }));
   };
 

@@ -96,6 +96,7 @@ export const PurchaseProvider = ({ children }:{ children: ReactNode }) => {
     meddipayAuthorizationCode: false,
     emailBillingValid: false,
     termBillingAcept: false,
+    billingCompleted: false,
   });
   
   const [errors, setErrors] = useState<Record<string, string | null>>({ //Estado para controlar los errores
@@ -113,7 +114,7 @@ export const PurchaseProvider = ({ children }:{ children: ReactNode }) => {
   const [selectedMethod, setSelectedMethod] = useState<string>("");
 
   const [generalPaymentData, setGeneralPaymentData] = useState<CustomPaymentData>({ identification: "", typeId: "", names: "", lastNames: "", email: "", address: "", phone: "", discount: 0, productId: 0, paymentMethod: { card: { number: "", cvc: "", expMonth: "", expYear: "", cardHolder: "" }, financialInstitutionCode: "0", installments: "0", paymentDescription: "", phoneNumber: "", type: "", userLegalId: "", userLegalIdType: "", userType: "" } });
-  const [registerPurchase, setRegisterPurchase] = useState<registerPurchase>({ id_transaccion: "", id_usuario_medicall: 0, id_aliado: 0, id_producto: 0, id_cita_medicall: 0, id_codigo_promo: 0, id_gestor: 0, identificacion_comprador: "", nombre_comprador: "", email_comprador: "", direccion_comprador: "", telefono_comprador: "", ciudad_comprador: "", departamento_comprador: "", fecha_compra: "", metodo_pago: "", porcentaje_comision_gestor: 0, subtotal: 0, iva: 0, comision_transaccion: 0, total: 0, total_centavos: 0, fecha_pago: "", descripcion_compra: "", estado_transaccion: "", ip_transaccion: "", compra_cancelada: false, estado_cuenta: false, tipopersona_factura: 0, tipoid_factura: "", numid_factura: "", dv_factura: "", nombre_factura: "", direccion_factura: "", correo_factura: "", pais_factura: "COLOMBIA", num_factura: "", envio_factura: false, producto: "", nombre_institucion: "", telefono_institucio: "", direccion_institucion: "", ciudad_institucion: "", dpto_institucion: "", pais_institucion: "", link_ayuda: "", link_terminos: "", link_pasos: "" });
+  const [registerPurchase, setRegisterPurchase] = useState<registerPurchase>({ id_transaccion: "", id_usuario_medicall: 0, id_aliado: 0, id_producto: 0, id_cita_medicall: 0, id_codigo_promo: 0, id_gestor: 0, identificacion_comprador: "", nombre_comprador: "", email_comprador: "", direccion_comprador: "", telefono_comprador: "", ciudad_comprador: "", departamento_comprador: "", fecha_compra: "", metodo_pago: "", porcentaje_comision_gestor: 0, subtotal: 0, iva: 0, comision_transaccion: 0, total: 0, total_centavos: 0, fecha_pago: "", descripcion_compra: "", estado_transaccion: "", ip_transaccion: "", compra_cancelada: false, estado_cuenta: false, tipopersona_factura: "", tipoid_factura: "", numid_factura: "", dv_factura: "", nombre_factura: "", direccion_factura: "", correo_factura: "", pais_factura: "COLOMBIA", num_factura: "", envio_factura: false, producto: "", nombre_institucion: "", telefono_institucio: "", direccion_institucion: "", ciudad_institucion: "", dpto_institucion: "", pais_institucion: "", link_ayuda: "", link_terminos: "", link_pasos: "" });
   const [registerPurchaseSaved, setRegisterPurchaseSaved] = useState(false);
 
 

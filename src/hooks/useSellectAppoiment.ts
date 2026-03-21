@@ -36,6 +36,8 @@ export const useSelectAllieExtended = () => {
   const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
   const [allyProvider, setAllyProvider] = useState<{ id: string; nombre: string }[]>([]);
   const [allies, setAllies] = useState<Ally[]>([]);
+  /** Aliados del municipio actual (con num_identificacion) para setear identificacion_prestador */
+  const [alliesInCurrentMunicipality, setAlliesInCurrentMunicipality] = useState<Ally[]>([]);
   const [loadingAliado, setLoadingAliado] = useState(false);
   const [selectsDisabled, setSelectsDisabled] = useState(false);
 
@@ -79,8 +81,8 @@ export const useSelectAllieExtended = () => {
 
   const loadAllies = async () => {
     try {
-      const alliesData = await fetchAllies();
-      console.log('Aliados cargados:', alliesData);
+      const alliesData = await fetchAllies({ citasFree: isFree });
+      console.log('Aliados cargados:', alliesData, isFree ? '(tabla citas free)' : '(tabla bexa claro)');
       setAllies(alliesData);
 
       // Filtrar departamentos con base en los aliados
@@ -130,10 +132,11 @@ export const useSelectAllieExtended = () => {
 
   const loadProvidersByMunicipality = async (municipalityId: number) => {
     try {
-      const allies = await fetchAlliesByIdMunicipality(municipalityId);
-      if (!Array.isArray(allies)) return [];
-      console.log('Prestadores obtenidos:', allies);
-      const formatted = allies.map((a: Ally) => ({
+      const alliesData = await fetchAlliesByIdMunicipality(municipalityId);
+      if (!Array.isArray(alliesData)) return [];
+      console.log('Prestadores obtenidos:', alliesData);
+      setAlliesInCurrentMunicipality(alliesData);
+      const formatted = alliesData.map((a: Ally) => ({
         id: String(a.id_institucion),
         nombre: a.nombre_prestador,
       }));
@@ -197,6 +200,7 @@ export const useSelectAllieExtended = () => {
         dpto_institucion: dpto ? dpto.nombre : "",
         ciudad_institucion: "",
         nombre_institucion: "",
+        identificacion_prestador: "",
         direccion_institucion: "",
         telefono_institucio: "",
       }));
@@ -227,6 +231,7 @@ export const useSelectAllieExtended = () => {
         ...prev,
         ciudad_institucion: mun ? mun.nombre : "",
         nombre_institucion: "",
+        identificacion_prestador: "",
         direccion_institucion: "",
         telefono_institucio: "",
       }));
@@ -261,11 +266,13 @@ export const useSelectAllieExtended = () => {
         const info = await getInstitutionInfo(value);
         console.log('Info de institución:', info);
         
+        const allyWithNit = alliesInCurrentMunicipality.find((a) => String(a.id_institucion) === String(value));
         setRegisterPurchase((prev: registerPurchase) => ({
           ...prev,
           nombre_institucion: provider.nombre,
           direccion_institucion: info.direccion,
           telefono_institucio: info.telefono,
+          identificacion_prestador: allyWithNit?.num_identificacion ?? prev.identificacion_prestador,
         }));
         setCover(info.cover)
         
@@ -489,6 +496,7 @@ export const useSelectAllieExtended = () => {
         nombre_institucion: ally.nombre_prestador,
         direccion_institucion: info.direccion,
         telefono_institucio: info.telefono,
+        identificacion_prestador: ally.num_identificacion ?? prev.identificacion_prestador,
       }));
       setCover(info.cover)
 
@@ -537,6 +545,7 @@ export const useSelectAllieExtended = () => {
         dpto_institucion: "",
         ciudad_institucion: "",
         nombre_institucion: "",
+        identificacion_prestador: "",
         direccion_institucion: "",
         telefono_institucio: "",
       }));
@@ -550,6 +559,7 @@ export const useSelectAllieExtended = () => {
         hour: "",
       });
       setAllyProvider([]);
+      setAlliesInCurrentMunicipality([]);
       setSedes([]);
       setProfessionals([]);
       setDays([]);
@@ -585,7 +595,8 @@ export const useSelectAllieExtended = () => {
     try {
       const provider = await findProviderWithClosestSlot(
         appointment.idSpecialist,
-        appointment.idTypeServices
+        appointment.idTypeServices,
+        { useCitasFreeAllies: isFree }
       );
       if (!provider) {
         setAllyProvider([]);
@@ -626,12 +637,13 @@ export const useSelectAllieExtended = () => {
         telefono_institucio: info.telefono,
         dpto_institucion: provider.ally.nombre_departamento ?? "",
         ciudad_institucion: provider.ally.nombre_municipio ?? "",
+        identificacion_prestador: provider.ally.num_identificacion ?? prev.identificacion_prestador,
       }));
 
       setAllyProvider([{ id: provider.institutionId, nombre: provider.ally.nombre_prestador }]);
       setSedes([provider.sede]);
       setProfessionals([provider.professional]);
-      setIdMunicipioInstitucion(provider.municipalityId);
+      setIdMunicipioInstitucion(Number(provider.municipalityId));
       setCover(info.cover);
       setSelectsDisabled(true);
 

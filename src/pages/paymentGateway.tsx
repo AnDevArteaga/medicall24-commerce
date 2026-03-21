@@ -16,6 +16,7 @@ import ValidateMeddipayCupoModal from "../components/modals/paymentGateway/stepT
 import MeddipaySuccessModal from "../components/modals/paymentGateway/stepTwo/meddipay-success";
 import MeddipayErrorModal from "../components/modals/paymentGateway/stepTwo/meddipay-error";
 import SolicitarCupoMeddipayModal, { Paso } from "../components/modals/paymentGateway/stepTwo/solicitar-cupo-meddipay";
+import AuthAgenteRecaudadorModal from "../components/modals/paymentGateway/stepTwo/auth-agente-recaudador";
 import ConsultationResultModal from "../components/modals/paymentGateway/stepThree/consultation-result";
 import { useModal } from "../contexts/modals";
 import { useGetProduct } from "../hooks/useGetProduct";
@@ -288,6 +289,11 @@ const PaymentGateway: React.FC = () => {
                             onCancel={handleCancelSolicitarCupo}
                             onGoToMeddipay={handleGoToMeddipay}
                         />
+                    )}
+
+                    {/* Modal autenticación agente recaudador (pago efectivo) */}
+                    {isModalOpen("authAgenteRecaudador") && (
+                        <AuthAgenteRecaudadorModal />
                     )}
 
                     {/* Modal de resultado de consultación */}

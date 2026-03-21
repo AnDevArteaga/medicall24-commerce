@@ -8,6 +8,8 @@ import { useSelectDataPurchase } from '../../hooks/useSelectDataPurchase'
 import { useModal } from '../../contexts/modals'
 import InputCheck from '../ui/checkbox'
 
+import { BanknoteIcon } from 'lucide-react'
+
 import visa from '../../assets/svg/visa.svg'
 import mastercard from '../../assets/svg/mastercard.svg'
 import pse from '../../assets/svg/pse.svg'
@@ -20,6 +22,7 @@ import Pse from './formsMethod/pse'
 import Bancolombia from './formsMethod/bancolombia'
 import Nequi from './formsMethod/nequi'
 import Meddipay from './formsMethod/meddipay'
+import Efectivo from './formsMethod/efectivo'
 
 import { capitalize } from '../../utils/forms'
 
@@ -35,6 +38,8 @@ const renderFormMethod = (method: string) => {
       return <Nequi />
     case 'MEDDIPAY':
       return <Meddipay />
+    case 'EFECTIVO':
+      return <Efectivo />
     default:
       return <div></div>
   }
@@ -98,7 +103,7 @@ const StepTwo: React.FC = () => {
                   purchaseData,
                   'typeId',
                   'border-2 border-gray-300',
-                  'border-2 border-primary'
+                  'border-2 border-primary',
                 )}
               />
             </div>
@@ -114,7 +119,7 @@ const StepTwo: React.FC = () => {
                 purchaseData,
                 'identification',
                 'border-2 border-gray-300',
-                'border-2 border-primary'
+                'border-2 border-primary',
               )}
               onChange={handleSelectDataPurchase}
             />
@@ -132,7 +137,7 @@ const StepTwo: React.FC = () => {
                 purchaseData,
                 'names',
                 'border-2 border-gray-300',
-                'border-2 border-primary'
+                'border-2 border-primary',
               )}
               onChange={handleSelectDataPurchase}
             />
@@ -148,7 +153,7 @@ const StepTwo: React.FC = () => {
                 purchaseData,
                 'lastNames',
                 'border-2 border-gray-300',
-                'border-2 border-primary'
+                'border-2 border-primary',
               )}
               onChange={handleSelectDataPurchase}
             />
@@ -166,7 +171,7 @@ const StepTwo: React.FC = () => {
                   purchaseData,
                   'email',
                   'border-2 border-gray-300',
-                  'border-2 border-primary'
+                  'border-2 border-primary',
                 )}
                 onBlur={() => handleValidateDomainEmail(purchaseData.email)}
                 onChange={handleSelectDataPurchase}
@@ -185,7 +190,7 @@ const StepTwo: React.FC = () => {
                 purchaseData,
                 'address',
                 'border-2 border-gray-300',
-                'border-2 border-primary'
+                'border-2 border-primary',
               )}
               onChange={handleSelectDataPurchase}
             />
@@ -200,7 +205,7 @@ const StepTwo: React.FC = () => {
                 purchaseData,
                 'phone',
                 'border-2 border-gray-300',
-                'border-2 border-primary'
+                'border-2 border-primary',
               )}
               onChange={handleSelectDataPurchase}
             />
@@ -219,7 +224,7 @@ const StepTwo: React.FC = () => {
                 purchaseData,
                 'departament',
                 'border-2 border-gray-300',
-                'border-2 border-primary'
+                'border-2 border-primary',
               )}
             />{' '}
             <SelectInput
@@ -239,7 +244,7 @@ const StepTwo: React.FC = () => {
                 purchaseData,
                 'city',
                 'border-2 border-gray-300',
-                'border-2 border-primary'
+                'border-2 border-primary',
               )}
             />
           </div>
@@ -289,8 +294,8 @@ const StepTwo: React.FC = () => {
             selectedMethod === ''
               ? 'border-2 border-pink-600'
               : selectedMethod === method.id
-              ? 'bg-white border-2 border-pink-600 shadow-lg'
-              : 'border-none'
+                ? 'bg-white border-2 border-pink-600 shadow-lg'
+                : 'border-none'
           }
           transform transition-transform duration-300 fade-in`}
                 >
@@ -326,6 +331,9 @@ const StepTwo: React.FC = () => {
                           alt="meddipay"
                           className="w-20 h-auto"
                         />
+                      )}
+                      {method.id === 'EFECTIVO' && (
+                        <BanknoteIcon className="w-10 h-10 text-primary" />
                       )}
                     </div>
                   </div>

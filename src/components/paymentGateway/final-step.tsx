@@ -1,6 +1,6 @@
 import React from 'react'
 import { useGenerateTransaction } from '../../hooks/useGenerateTransaction'
-import { CheckCircle, Clock, XCircle, Calendar, Home } from 'lucide-react'
+import { CheckCircle, Clock, XCircle } from 'lucide-react'
 import { OrderStatus } from '../../types/status'
 import { usePurchaseContext } from '../../contexts/checkout'
 import SeeEmail from './tutorials/see-email'

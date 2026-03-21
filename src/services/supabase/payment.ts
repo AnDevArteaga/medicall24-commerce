@@ -3,11 +3,34 @@ import { apiSupabase, apiSupabaseFunctions } from "../config/apis";
 import { registerPurchase } from "../../interfaces/checkout.interfase";
 import { CreateAppointmentDataProps } from "../../contexts/appoiment";
 
+/** Columnas de registro_compra que son integer en la DB. Evitar enviar "" para no provocar 22P02. */
+const REGISTRO_COMPRA_INTEGER_KEYS = [
+  "id_usuario_medicall", "id_aliado", "id_codigo_promo", "id_gestor", "id_producto", "id_cita_medicall",
+  "porcentaje_comision_gestor", "subtotal", "iva", "comision_transaccion", "total", "total_centavos",
+  "tipopersona_factura", "id_paciente", "id_orden_pago",
+] as const;
+
+function sanitizeRegistroCompraPayload<T extends Record<string, unknown>>(payload: T): T {
+  const out = { ...payload };
+  for (const key of REGISTRO_COMPRA_INTEGER_KEYS) {
+    if (!(key in out)) continue;
+    const v = (out as Record<string, unknown>)[key];
+    if (v === "" || v === undefined) {
+      (out as Record<string, unknown>)[key] = null;
+    } else if (typeof v === "string") {
+      const n = Number(v);
+      (out as Record<string, unknown>)[key] = Number.isFinite(n) ? n : null;
+    }
+  }
+  return out;
+}
+
 export const registerPurchaseData = async (registerPurchase: registerPurchase) => {
   try {
+    const payload = sanitizeRegistroCompraPayload(registerPurchase as unknown as Record<string, unknown>) as unknown as registerPurchase;
     const response = await axios.post(
       `${apiSupabase}/registro_compra`,
-      registerPurchase,
+      payload,
       {
         headers: {
           apikey: import.meta.env.VITE_SUPABASE_CLIENT_ANON_KEY_API,
@@ -108,9 +131,10 @@ export const getPurchaseIdByTransactionId = async (idTransaccion: string): Promi
 
 export const updatePurchaseData = async (idCompra: number, updates: Partial<registerPurchase>) => {
   try {
+    const payload = sanitizeRegistroCompraPayload(updates as unknown as Record<string, unknown>) as unknown as Partial<registerPurchase>;
     const response = await axios.patch(
       `${apiSupabase}/registro_compra?id_compra=eq.${idCompra}`,
-      updates,
+      payload,
       {
         headers: {
           apikey: import.meta.env.VITE_SUPABASE_CLIENT_ANON_KEY_API,
@@ -130,6 +154,54 @@ export const updatePurchaseData = async (idCompra: number, updates: Partial<regi
   } catch (error) {
     console.error("Error actualizando compra:", error);
     throw error;
+  }
+};
+
+/** Obtiene payload de correo por compra (quick-action) y envía con rapid-service. Llamar antes de createConsultation. */
+export const sendConfirmationEmail = async (idCompra: number, transactionId?: string) => {
+  console.log("[EMAIL] sendConfirmationEmail llamado → id_compra:", idCompra, "id_transaccion:", transactionId ?? "(no)");
+  try {
+    const body: { id_compra: number; id_transaccion?: string } = { id_compra: idCompra };
+    if (transactionId) body.id_transaccion = transactionId;
+    const payloadRes = await axios.post(
+      `${apiSupabaseFunctions}/quick-action`,
+      body,
+      {
+        headers: {
+          apikey: import.meta.env.VITE_SUPABASE_CLIENT_ANON_KEY_API,
+          Authorization: import.meta.env.VITE_SUPABASE_CLIENT_ANON_KEY_AUTH,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    console.log("[EMAIL] quick-action → status:", payloadRes.status, "to:", (payloadRes.data as { to?: string })?.to);
+    const payload = payloadRes.data as { template_id: string; to: string; dynamic_template_data: Record<string, unknown> };
+    const emailRes = await axios.post(
+      `${apiSupabaseFunctions}/rapid-service`,
+      payload,
+      {
+        headers: {
+          apikey: import.meta.env.VITE_SUPABASE_CLIENT_ANON_KEY_API,
+          Authorization: import.meta.env.VITE_SUPABASE_CLIENT_ANON_KEY_AUTH,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    console.log("[EMAIL] rapid-service → status:", emailRes.status);
+    if (emailRes.status === 202) {
+      console.log("✅ Correo de confirmación enviado");
+    } else {
+      console.warn("[EMAIL] rapid-service no devolvió 202:", emailRes.status, emailRes.data);
+    }
+    return { ok: emailRes.status === 202 };
+  } catch (error: unknown) {
+    const ax = error as { response?: { status?: number; data?: unknown }; message?: string };
+    console.warn(
+      "⚠️ No se pudo enviar correo de confirmación:",
+      ax?.response?.status != null ? `HTTP ${ax.response.status}` : ax?.message ?? error
+    );
+    if (ax?.response?.data) console.warn("[EMAIL] respuesta error:", ax.response.data);
+    return { ok: false };
   }
 };
 

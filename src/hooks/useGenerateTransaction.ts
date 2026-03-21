@@ -7,7 +7,7 @@ import {
     fetchPaymentStatus,
     payment,
 } from "../services/azure/payments";
-import { createConsultation, updatePurchaseData, getPurchaseIdByTransactionId } from "../services/supabase/payment";
+import { createConsultation, updatePurchaseData, getPurchaseIdByTransactionId, sendConfirmationEmail } from "../services/supabase/payment";
 
 export const useGenerateTransaction = () => {
     const [loading, setLoading] = useState(false);
@@ -16,6 +16,7 @@ export const useGenerateTransaction = () => {
     // 🔒 refs para evitar dobles ejecuciones
     const purchaseSavedRef = useRef(false);
     const pollingStoppedRef = useRef(false);
+    const consultationCreatedRef = useRef(false);
 
     const {
         generalPaymentData,
@@ -42,6 +43,7 @@ export const useGenerateTransaction = () => {
         if (!registerPurchase.id_transaccion) {
             purchaseSavedRef.current = false;
             pollingStoppedRef.current = false;
+            consultationCreatedRef.current = false;
             setConsultationCreated(false);
         }
     }, [registerPurchase.id_transaccion]);
@@ -148,7 +150,7 @@ export const useGenerateTransaction = () => {
                 /* =======================
                     ACTUALIZAR COMPRA Y CREAR CONSULTA CUANDO ESTÉ APROBADA
                    ======================= */
-                if (isApproved && !consultationCreated) {
+                if (isApproved && !consultationCreatedRef.current) {
                     console.log("✅ [APPROVED] Pago aprobado, obteniendo id_compra y creando consulta");
                     
                     // Obtener id_compra desde la base de datos usando id_transaccion
@@ -159,6 +161,10 @@ export const useGenerateTransaction = () => {
                         console.error("❌ [POLL] No se pudo obtener id_compra, no se puede crear consulta");
                         return;
                     }
+
+                    // Marcar de inmediato para evitar que otro poll cree la consulta otra vez
+                    consultationCreatedRef.current = true;
+                    setConsultationCreated(true);
                     
                     console.log("✅ [APPROVED] id_compra encontrado:", idCompra);
 
@@ -179,8 +185,11 @@ export const useGenerateTransaction = () => {
                     }
 
                     /* =======================
-                        CREAR CONSULTA (ASIGNAR CITA)
+                        CORREO DE CONFIRMACIÓN Y LUEGO CREAR CONSULTA (ASIGNAR CITA)
                        ======================= */
+                    console.log("[POLL] Enviando correo confirmación id_compra:", idCompra);
+                    await sendConfirmationEmail(idCompra, transactionId);
+
                     try {
                         console.log("📅 [CONSULT] Creando consulta con id_compra:", idCompra);
 
@@ -227,6 +236,10 @@ export const useGenerateTransaction = () => {
                         setConsultationResult(consultation);
                         setConsultationCreated(true);
                         console.log("✅ [CONSULT] Consulta creada exitosamente");
+                        console.log("📋 [CONSULT] Objeto consultation completo (para depurar modal):", JSON.stringify(consultation, null, 2));
+                        console.log("📋 [CONSULT] consultation.data:", consultation?.data);
+                        console.log("📋 [CONSULT] consultation.data?.data:", consultation?.data?.data);
+                        console.log("📋 [CONSULT] consultation.data?.cita:", consultation?.data?.cita);
                     } catch (error: unknown) {
                         console.error("❌ [CONSULT] Error creando consulta:", error);
                         

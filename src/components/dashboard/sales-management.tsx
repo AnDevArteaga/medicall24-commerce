@@ -26,6 +26,16 @@ function formatDate(dateString: string) {
   })
 }
 
+function getMetodoPagoLabel(venta: { metodo_pago?: string; agente_efectivo_email?: string }): string {
+  const metodo = venta.metodo_pago || ''
+  if (metodo === 'MEDDIPAY') return 'Meddipay'
+  if (metodo === 'EFECTIVO') {
+    return venta.agente_efectivo_email ? `Efectivo (${venta.agente_efectivo_email})` : 'Efectivo'
+  }
+  if (['CARD', 'PSE', 'NEQUI', 'BANCOLOMBIA_TRANSFER'].includes(metodo)) return 'Wompi'
+  return metodo || 'N/A'
+}
+
 export default function SalesManagement() {
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
@@ -144,7 +154,7 @@ export default function SalesManagement() {
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm hidden md:table-cell">
                     <span className="px-2 py-1 text-xs font-medium rounded-full bg-secondary/20 text-secondary">
-                      {venta.metodo_pago || 'N/A'}
+                      {getMetodoPagoLabel(venta)}
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm font-semibold text-gray-900">

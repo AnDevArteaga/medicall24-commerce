@@ -147,6 +147,9 @@ export default function PaymentGestoresManagement() {
                   Total Pagado
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  Paciente / Comprador
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   Gestor
                 </th>
                 <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
@@ -166,13 +169,13 @@ export default function PaymentGestoresManagement() {
             <tbody className="divide-y divide-gray-200 bg-white">
               {loading && ventas.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-12 text-center">
+                  <td colSpan={10} className="px-4 py-12 text-center">
                     <Loader />
                   </td>
                 </tr>
               ) : ventas.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-12 text-center text-gray-500">
+                  <td colSpan={10} className="px-4 py-12 text-center text-gray-500">
                     No hay registros con estado APPROVED, gestor y código promo asignados
                   </td>
                 </tr>
@@ -201,6 +204,9 @@ export default function PaymentGestoresManagement() {
                       </td>
                       <td className="px-4 py-3 text-sm text-right font-medium text-gray-900">
                         {formatCurrency(v.total ?? 0)}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate" title={v.nombre_comprador ?? ''}>
+                        {v.nombre_comprador ?? '—'}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">
                         {v.gestor?.razon_social ?? '—'}

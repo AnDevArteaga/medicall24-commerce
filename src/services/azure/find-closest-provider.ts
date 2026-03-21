@@ -93,15 +93,21 @@ async function getEarliestSlotForProfessional(
   return null;
 }
 
+export type FindClosestProviderOptions = {
+  /** Si true, usa tabla aliado_comercial_citasfree (consulta gratuita) */
+  useCitasFreeAllies?: boolean;
+};
+
 /**
  * Encuentra el prestador con el turno disponible más cercano a la hora actual.
  * Solo considera prestadores que tengan agenda disponible para la especialidad.
  */
 export async function findProviderWithClosestSlot(
   specialtyId: number,
-  typeServiceId: number = 3
+  typeServiceId: number = 3,
+  options?: FindClosestProviderOptions
 ): Promise<ProviderWithSlot | null> {
-  const allies = await fetchAllies();
+  const allies = await fetchAllies({ citasFree: options?.useCitasFreeAllies });
   if (!allies || allies.length === 0) return null;
 
   const now = new Date();
