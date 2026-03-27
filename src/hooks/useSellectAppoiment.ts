@@ -323,10 +323,19 @@ export const useSelectAllieExtended = () => {
       setDays([]);
       setHours([]);
 
+      const selectedProfessional = professionals.find((p) => String(p.id) === String(value));
+      const professionalName = selectedProfessional
+        ? [selectedProfessional.user?.name1, selectedProfessional.user?.name2, selectedProfessional.user?.lastname1, selectedProfessional.user?.lastname2]
+            .filter(Boolean)
+            .join(" ")
+            .trim()
+        : "";
+
       setAppointment((prev) => ({ ...prev, idProfessional: value }));
       setCreateAppointmentData((prev) => ({
         ...prev,
         professionalId: parseInt(value),
+        professionalName,
       }));
 
       // Cargar días automáticamente
@@ -628,6 +637,15 @@ export const useSelectAllieExtended = () => {
         institutionId: Number(provider.institutionId),
         sedeId: parseInt(provider.sede.id),
         professionalId: parseInt(provider.professional.id),
+        professionalName: [
+          provider.professional.user?.name1,
+          provider.professional.user?.name2,
+          provider.professional.user?.lastname1,
+          provider.professional.user?.lastname2,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .trim(),
       }));
 
       setRegisterPurchase((prev: registerPurchase) => ({
@@ -669,6 +687,24 @@ export const useSelectAllieExtended = () => {
       await loadAllies();
       if (product) {
         console.log('Producto detectado:', product);
+        
+        const productName = ('producto' in product ? product.producto : product.nombre) || "";
+        const productNameLower = productName.toLowerCase();
+        
+        let annotation = productName;
+        if (isFree || productNameLower.includes('gratuita') || productNameLower.includes('gratis')) {
+            annotation = 'Consulta prueba gratuita';
+        } else if (productNameLower.includes('bexa')) {
+            annotation = 'Cita-Exámen-bexa';
+        }
+        console.log('annotation:', annotation);
+
+        setCreateAppointmentData(prev => ({
+            ...prev,
+            requestAnotation: annotation
+        }));
+
+
         if (isFree && !isProductPromo(product)) {
           console.log('Es isFree: buscando prestador con slot más cercano');
           await assignClosestProvider();
@@ -685,6 +721,7 @@ export const useSelectAllieExtended = () => {
       }
     };
     init();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product, isFree]);
 
   useEffect(() => {

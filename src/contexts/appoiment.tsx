@@ -16,6 +16,7 @@ export interface CreateAppointmentDataProps {
   fecha: string;
   desiredDate: string;
   professionalId: number;
+  professionalName?: string;
   specialtyId: number;
   contractId: number;
   institutionId: number;
@@ -56,6 +57,7 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
     fecha: "",
     desiredDate: "",
     professionalId: 0,
+    professionalName: "",
     specialtyId: 140,
     contractId: 0,
     institutionId: 0,
@@ -67,7 +69,7 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
     type: "presencial",
     tipoConsultaId: 0,
     duration: 0,
-    requestAnotation: "Cita-Exámen-bexa",
+    requestAnotation: "",
     externalProvider: true,
   });
 

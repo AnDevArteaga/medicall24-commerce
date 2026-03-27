@@ -11,7 +11,7 @@ import { getConsent } from '../../../../services/azure/consents'
 import { usePurchaseContext } from '../../../../contexts/checkout'
 import { isProductPromo } from '../../../../guard/type-product'
 import { fillRegisterPurchase } from '../../../../hooks/usePaymentFlow'
-import { createConsultation } from '../../../../services/supabase/payment'
+import { createConsultation, sendConfirmationEmail } from '../../../../services/supabase/payment'
 import { useSavePurchaseData } from '../../../../hooks/useSavePurchaseData'
 import { toast } from 'react-hot-toast'
 
@@ -122,6 +122,10 @@ const SelectAllie: React.FC = () => {
         if (!saveResult?.id_compra) {
           throw new Error('No se pudo guardar la compra')
         }
+        
+        // Enviar correo de confirmación de compra (o asignación gratuita)
+        await sendConfirmationEmail(saveResult.id_compra, freeIdTransaction);
+
         const consultation = await createConsultation(
           registerPurchaseFree.id_transaccion,
           saveResult.id_compra,

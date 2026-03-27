@@ -20,6 +20,8 @@ const FinalStep: React.FC = () => {
     (consultationResult.status === 200 || consultationResult.status === 201) &&
     (consultationResult.data?.success === true || consultationResult.data?.data)
 
+  const hasFailedConsultation = consultationResult && !hasSuccessfulConsultation;
+
   const handleViewConsultation = () => {
     if (consultationResult) {
       openModal('consultationResult', { result: consultationResult })
@@ -97,7 +99,7 @@ const FinalStep: React.FC = () => {
         </div>
         {status === null && selectedMethod === 'NEQUI' && <TutorialNequi />}
 
-        {isApproved && <SeeEmail />}
+        {isApproved && <SeeEmail hasFailedConsultation={!!hasFailedConsultation} />}
 
         {/* Botones cuando la transacción fue aprobada */}
         {isApproved && (

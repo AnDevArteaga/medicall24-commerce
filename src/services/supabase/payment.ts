@@ -69,10 +69,12 @@ export const registerPurchaseData = async (registerPurchase: registerPurchase) =
 
 export const registerAppointmentData = async (id_transaccion: string, appointment: CreateAppointmentDataProps, patientId: number, id_municipio: number | string, id_compra?: number) => {
   console.log("appointment en fecth", appointment)
+  const { professionalName, ...appointmentWithoutUiFields } = appointment;
   const appoimentComplete = {
-    ...appointment,
+    ...appointmentWithoutUiFields,
     id_transaccion,
     patientId: patientId, // Usar el ID del paciente (userCompleteData.id)
+    ...(professionalName ? { professional_name: professionalName } : {}),
     municipio: typeof id_municipio === 'string' ? parseInt(id_municipio, 10) : id_municipio, // Convertir a número si es string
     ...(id_compra && { id_compra }), // Agregar id_compra si está presente
   };
@@ -96,7 +98,38 @@ export const registerAppointmentData = async (id_transaccion: string, appointmen
       console.log("Datos insertados correctamente");
     }
     return response.status
-  } catch (error) {
+  } catch (error: unknown) {
+    const ax = error as { response?: { status?: number; data?: { message?: string; error?: string } } };
+    const msg = String(ax?.response?.data?.message ?? ax?.response?.data?.error ?? "");
+
+    // Compatibilidad: si la columna professional_name aún no existe en producción,
+    // reintentar sin ese campo para no bloquear la creación de la cita.
+    const professionalColumnMissing =
+      msg.includes("professional_name") &&
+      (msg.includes("schema cache") || msg.includes("column") || msg.includes("does not exist"));
+
+    if (professionalColumnMissing) {
+      console.warn("⚠️ professional_name no existe en DB, reintentando insert sin ese campo");
+      const fallbackPayload = { ...(appoimentComplete as Record<string, unknown>) };
+      delete fallbackPayload.professional_name;
+      const retry = await axios.post(
+        `${apiSupabase}/citas_external_provider`,
+        fallbackPayload,
+        {
+          headers: {
+            apikey: import.meta.env.VITE_SUPABASE_CLIENT_ANON_KEY_API,
+            Authorization: import.meta.env.VITE_SUPABASE_CLIENT_ANON_KEY_AUTH,
+            "Content-Type": "application/json",
+            Prefer: "return=minimal",
+          },
+        }
+      );
+      if (retry.status === 201 || retry.status === 200) {
+        console.log("Datos insertados correctamente (sin professional_name)");
+      }
+      return retry.status;
+    }
+
     console.error("Error guardando compra:", error);
     throw error;
   }

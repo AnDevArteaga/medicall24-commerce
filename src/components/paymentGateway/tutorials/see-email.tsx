@@ -1,10 +1,26 @@
 import React from 'react'
-import { MailCheck } from 'lucide-react'
+import { MailCheck, AlertCircle } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
-const SeeEmail: React.FC = () => {
+
+interface SeeEmailProps {
+  hasFailedConsultation?: boolean;
+}
+
+const SeeEmail: React.FC<SeeEmailProps> = ({ hasFailedConsultation }) => {
   const [searchParams] = useSearchParams()
   const isFree = searchParams.get('isFree')
-  console.log(isFree)
+
+  if (hasFailedConsultation) {
+    return (
+      <div className="flex flex-col items-center justify-center p-4 bg-red-100 text-red-800 rounded-lg shadow-md w-full max-w-2xl mx-auto">
+        <AlertCircle className="w-12 h-12 text-red-800" />
+        <p className="text-center mt-2 text-base sm:text-base font-regular">
+          Tu transacción fue aprobada, pero tuvimos un problema al asignar la cita. Por favor, contáctate con soporte.
+        </p>
+      </div>
+    )
+  }
+
   if (isFree === 'true') {
     return (
       <div className="flex flex-col items-center justify-center p-4 bg-green-100 text-green-800 rounded-lg shadow-md w-full max-w-2xl mx-auto">
