@@ -11,6 +11,7 @@ import { togglePasswordVisibility, checkPasswordMatch } from "../utils/handle-pa
 import { setFieldError } from "../utils/forms";
 import { useModal } from "../contexts/modals";
 import { resendActivationCode } from "../services/azure/user";
+import { ensureUsuarioComercio } from "../services/supabase/usuario-comercio";
 
 
 
@@ -71,7 +72,12 @@ export const useRegister = () => {
     };
 
     // Registrar un nuevo usuario
-    const registerUser = async () => {
+    type RegisterUserOptions = {
+        /** Props extra para el modal newUserRegister (p. ej. flow consulta gratuita) */
+        newUserModalProps?: Record<string, unknown>;
+    };
+
+    const registerUser = async (options?: RegisterUserOptions) => {
         setLoading(true);
         try {
             const registerDataCopy = { ...registerData }; // Para evitar que se modifique directamente el estado
@@ -81,6 +87,12 @@ export const useRegister = () => {
                 setIsRegistered(true);
                 setStatusRegister("success");
                 await resendActivationCode(registerDataCopy.user.email);
+                await ensureUsuarioComercio({
+                    id_usuario_medicall: response.data.id,
+                    tipo_identificacion: registerDataCopy.user.typeId,
+                    identificacion: registerDataCopy.user.identification,
+                    email: registerDataCopy.user.email,
+                });
             } else {
                 setStatusRegister("error");
                 setIsRegistered(false);
@@ -91,7 +103,10 @@ export const useRegister = () => {
 
             }
             closeModal("confirmData");
-            openModal("newUserRegister");
+            openModal("newUserRegister", {
+                flow: "purchase",
+                ...(options?.newUserModalProps ?? {}),
+            });
 
         } catch (error) {
             console.error("Error al registrar el usuario:", error);

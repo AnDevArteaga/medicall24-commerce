@@ -7,13 +7,15 @@ import { validateStates } from "../utils/validate-fields";
 import { usePaymentFlow } from "./usePaymentFlow";
 import { validateCodeAuthorization } from "../services/azure/payments";
 import { toast } from "react-hot-toast";
+import { Appointment } from "../contexts/appoiment";
 
 const useNavigationButton = (
     currentStep: number,
     isUserRegistered: boolean,
     // setCurrentStep: React.Dispatch<React.SetStateAction<number>>,
 ) => {
-    const { validations, registerData, handleNext, purchaseData, paymentMethod, selectedMethod, creditData, detailPayment, isFree } = usePurchaseContext();
+    const { validations, registerData, handleNext, purchaseData, paymentMethod, selectedMethod, creditData, detailPayment, isFree, registerPurchase } = usePurchaseContext();
+    const { createAppointmentData } = Appointment();
     const { openModal, closeModal } = useModal();
     
     // Inicializar el estado con un valor por defecto basado en el paso inicial
@@ -66,7 +68,30 @@ const useNavigationButton = (
         });
     }, [openModal, closeModal]);
 
+    const hasValidAppointmentSelection = useCallback(() => {
+        const hasCoreAppointmentData =
+            Number(createAppointmentData.institutionId) > 0 &&
+            Number(createAppointmentData.sedeId) > 0 &&
+            Number(createAppointmentData.professionalId) > 0 &&
+            Boolean(createAppointmentData.fecha) &&
+            Boolean(createAppointmentData.desiredDate);
+
+        const hasProviderContactData =
+            Boolean(registerPurchase.direccion_institucion) &&
+            Boolean(registerPurchase.telefono_institucio);
+
+        return hasCoreAppointmentData && hasProviderContactData;
+    }, [createAppointmentData, registerPurchase.direccion_institucion, registerPurchase.telefono_institucio]);
+
+    const ensureAppointmentSelected = useCallback(() => {
+        if (hasValidAppointmentSelection()) return true;
+        toast.error("Debes seleccionar los datos de la cita antes de continuar al pago.");
+        openModal("selectAllieBexa");
+        return false;
+    }, [hasValidAppointmentSelection, openModal]);
+
     const handleMeddipayValidation = useCallback(async () => {
+        if (!ensureAppointmentSelected()) return;
         if (selectedMethod === "MEDDIPAY" && creditData.meddipayAuthorizationCode) {
             try {
                 const isValid = await validateCodeAuthorization(
@@ -94,11 +119,12 @@ const useNavigationButton = (
         } else {
             executeAction('nextStepTwo');
         }
-    }, [selectedMethod, creditData.meddipayAuthorizationCode, registerData.user.identification, executeAction, validations.billingCompleted, openModal]);
+    }, [selectedMethod, creditData.meddipayAuthorizationCode, registerData.user.identification, executeAction, validations.billingCompleted, openModal, ensureAppointmentSelected]);
 
     const handleVerifyEmail = useCallback(() => {
+        if (!ensureAppointmentSelected()) return;
         openModal("verifiyEmail");
-    }, [openModal]);
+    }, [openModal, ensureAppointmentSelected]);
 
     // Memoizar las validaciones para evitar recalcularlas constantemente
     const validationResults = useMemo(() => {

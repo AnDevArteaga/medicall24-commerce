@@ -6,11 +6,12 @@ import ButtonForm from "../../../ui/button-forms";
 import { useModal } from "../../../../contexts/modals";
 interface ModalProps {
     onClose: () => void;
-    flow: string;
+    /** Flujo por defecto si no viene en las props del modal */
+    flow?: string;
 }
 
 const Modal: React.FC<ModalProps> = (
-    { onClose, flow },
+    { onClose, flow: flowProp = "purchase" },
 ) => {
     // const {
     //     activationCode,
@@ -26,19 +27,47 @@ const Modal: React.FC<ModalProps> = (
     // } = useAccountActivation();
     const { statusRegister, errors, handleNext } =
         usePurchaseContext();
-    const { openModal, closeModal } = useModal();
+    const { openModal, closeModal, getModalProps } = useModal();
+    const modalExtra = getModalProps<{
+        flow?: string;
+        onRegisterContinue?: () => void;
+    }>("newUserRegister");
+    const effectiveFlow = flowProp ?? modalExtra?.flow ?? "purchase";
+    const onRegisterContinue = modalExtra?.onRegisterContinue;
+
+    const handleDismissSuccess = () => {
+        const cont = onRegisterContinue;
+        onClose();
+        closeModal("newUserRegister");
+        if (cont) {
+            cont();
+            return;
+        }
+        if (effectiveFlow === "freeConsult") {
+            return;
+        }
+        handleNext();
+        if (effectiveFlow === "purchase") {
+            openModal("selectAllieBexa");
+        } else {
+            openModal("cardVinculed");
+        }
+    };
+
     return (
         <div className="fixed inset-0 bg-gray-600/50 z-20 flex justify-center items-center backdrop-blur-sm">
             <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative">
                 <X
                     className="absolute top-0 right-0 m-2 text-gray-400 hover:text-gray-700 transition cursor-pointer"
                     onClick={() => {
+                        const cont = onRegisterContinue;
                         onClose();
-                        if (flow === "purchase") {
+                        closeModal("newUserRegister");
+                        if (cont) return;
+                        if (effectiveFlow === "purchase") {
                             handleNext();
-                            closeModal("newUserRegister");
-                            openModal("selectAllieBexa")
-                        } else {
+                            openModal("selectAllieBexa");
+                        } else if (effectiveFlow !== "freeConsult") {
                             openModal("cardVinculed");
                         }
                     }}
@@ -142,20 +171,12 @@ const Modal: React.FC<ModalProps> = (
                             </h3>
                             <p className="mt-4 text-gray-600 mb-6">
                                 Tu cuenta ha sido registrada exitosamente.
-                                Puedes continuar con tu compra pulsando
-                                el botón siguiente.
+                                {onRegisterContinue
+                                    ? " Continúa para agendar tu consulta gratuita."
+                                    : " Puedes continuar con tu compra pulsando el botón siguiente."}
                             </p>
                             <ButtonForm
-                                onClick={() => {
-                                    onClose();
-                                    handleNext();
-                                    closeModal("newUserRegister");
-                                    if (flow === "purchase") {
-                                        openModal("selectAllieBexa");
-                                    } else {
-                                        openModal("cardVinculed");
-                                    }
-                                }}
+                                onClick={handleDismissSuccess}
                                 text="Siguiente"
                             />
                         </>

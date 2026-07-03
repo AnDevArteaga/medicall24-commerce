@@ -3,6 +3,7 @@ import { Eye, EyeOff } from "lucide-react"; // Usamos los íconos de Lucide
 import { useRegister } from "../../../../hooks/useRegister"; // Importamos la función registrar del hook
 import { usePurchaseContext } from "../../../../contexts/checkout";
 import ButtonForm from "../../../ui/button-forms";
+import { useModal } from "../../../../contexts/modals";
 
 interface ModalProps {
     onClose: () => void;
@@ -12,6 +13,10 @@ const Modal: React.FC<ModalProps> = ({ onClose }) => {
     const { registerUser, showPassword, setShowPassword, loading } =
         useRegister();
     const { registerData } = usePurchaseContext();
+    const { getModalProps } = useModal();
+    const confirmModalExtras = getModalProps<{
+        registerExtras?: { newUserModalProps?: Record<string, unknown> };
+    }>("confirmData");
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -109,6 +114,44 @@ const Modal: React.FC<ModalProps> = ({ onClose }) => {
                                 {registerData.user?.email || "N/A"}
                             </p>
                         </div>
+                        {(registerData.user?.birthDate ||
+                            registerData.user?.phone ||
+                            registerData.user?.gender) && (
+                            <>
+                                {registerData.user?.birthDate ? (
+                                    <div>
+                                        <h4 className="text-xs font-medium text-gray-800">
+                                            Fecha de nacimiento:
+                                        </h4>
+                                        <p className="text-xs text-gray-600">
+                                            {registerData.user.birthDate}
+                                        </p>
+                                    </div>
+                                ) : null}
+                                {registerData.user?.phone ? (
+                                    <div>
+                                        <h4 className="text-xs font-medium text-gray-800">
+                                            Teléfono:
+                                        </h4>
+                                        <p className="text-xs text-gray-600">
+                                            {registerData.user.phone}
+                                        </p>
+                                    </div>
+                                ) : null}
+                                {registerData.user?.gender ? (
+                                    <div>
+                                        <h4 className="text-xs font-medium text-gray-800">
+                                            Género biológico:
+                                        </h4>
+                                        <p className="text-xs text-gray-600">
+                                            {registerData.user.gender === "F"
+                                                ? "Femenino"
+                                                : "Masculino"}
+                                        </p>
+                                    </div>
+                                ) : null}
+                            </>
+                        )}
                         <div>
                             <h4 className="text-xs font-medium text-gray-800">
                                 Contraseña:
@@ -137,7 +180,13 @@ const Modal: React.FC<ModalProps> = ({ onClose }) => {
                 {/* Botón */}
                 <div className="px-6 py-4 bg-gray-100 flex justify-between rounded-b-lg text-center">
                         <ButtonForm onClick={onClose} text="Editar" />
-                        <ButtonForm onClick={registerUser} text={loading ? "Registrando..." : "Confirmar"} disabled={loading} />
+                        <ButtonForm
+                            onClick={() =>
+                                registerUser(confirmModalExtras?.registerExtras)
+                            }
+                            text={loading ? "Registrando..." : "Confirmar"}
+                            disabled={loading}
+                        />
                 </div>
             </div>
         </div>

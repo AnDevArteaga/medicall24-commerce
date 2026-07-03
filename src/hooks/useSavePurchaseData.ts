@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { registerPurchaseData } from "../services/supabase/payment";
 import { registerPurchase } from "../interfaces/checkout.interfase";
 import { CreateAppointmentDataProps, Appointment } from "../contexts/appoiment";
@@ -13,10 +13,19 @@ export const useSavePurchaseData = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
     const [saveSuccess, setSaveSuccess] = useState(false);
-    const createAppointmentData = Appointment();
+    const { createAppointmentData } = Appointment();
+    const appointmentDataRef = useRef(createAppointmentData);
     const { userId, purchaseData } = usePurchaseContext();
+
+    useEffect(() => {
+        appointmentDataRef.current = createAppointmentData;
+    }, [createAppointmentData]);
     
-    const savePurchase = async (purchaseDataToSave: registerPurchase, idMunicipio?: number | string) => {
+    const savePurchase = async (
+        purchaseDataToSave: registerPurchase,
+        idMunicipio?: number | string,
+        appointmentOverride?: CreateAppointmentDataProps,
+    ) => {
         setIsSaving(true);
         setSaveError(null);
         setSaveSuccess(false);
@@ -57,9 +66,16 @@ export const useSavePurchaseData = () => {
                 if (!idMunicipio) {
                     console.warn("No se proporcionó el ID del municipio, se usará 0 como valor por defecto");
                 }
+                const appointmentSnapshot =
+                    appointmentOverride ?? appointmentDataRef.current;
+                if (!appointmentSnapshot?.fecha?.trim()) {
+                    throw new Error(
+                        "No hay cita seleccionada. Vuelve a agendar sede, profesional y horario."
+                    );
+                }
                 await saveAppointment(
                     purchaseDataToSave.id_transaccion, 
-                    createAppointmentData.createAppointmentData, 
+                    appointmentSnapshot, 
                     patientId || userId, // Usar patientId si está disponible, sino userId como fallback
                     idMunicipio || 0, // Pasar el ID del municipio (número)
                     purchaseId // Pasar el ID de la compra
@@ -100,6 +116,7 @@ export const useSavePurchaseData = () => {
             console.error("Error guardando cita:", error);
             const errorMessage = error instanceof Error ? error.message : "Error desconocido";
             setSaveError(errorMessage);
+            throw error instanceof Error ? error : new Error(errorMessage);
         } finally {
             setIsSaving(false);
         }

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80" role="img" aria-label="Garant�a de salud habilitada (reemplazar)">
+  <circle cx="40" cy="40" r="38" fill="#f0f9ff" stroke="#0ea5e9" stroke-width="2"/>
+  <path fill="#22c55e" d="M40 18 L48 32 L64 34 L52 45 L55 62 L40 54 L25 62 L28 45 L16 34 L32 32 Z"/>
+  <text x="40" y="72" text-anchor="middle" font-family="system-ui,sans-serif" font-size="6" fill="#0369a1">reemplazar logo</text>
+</svg>

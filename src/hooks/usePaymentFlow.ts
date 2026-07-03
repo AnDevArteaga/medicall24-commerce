@@ -502,7 +502,11 @@ export async function fillRegisterPurchase(
         departamento_comprador: departamentoNombre, // Guardar el nombre en lugar del ID
         descripcion_compra: getProductName(),
         direccion_comprador: purchaseData.address,
-        email_comprador: purchaseData.email,
+        email_comprador:
+            purchaseData.email?.trim() ||
+            prev.correo_factura?.trim() ||
+            prev.email_comprador?.trim() ||
+            "",
         estado_cuenta: false,
         estado_transaccion: order?.estado_transaccion ?? "aprobada", // 👈 por defecto "aprobada" si no hay order
         fecha_compra: order?.fecha_compra ?? new Date().toISOString(),

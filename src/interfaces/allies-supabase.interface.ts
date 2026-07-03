@@ -13,10 +13,17 @@ export interface Ally {
     cover?: string;
   }
 
+/** Respuesta de GET Institutions/GetInstitution/:id (campos extra opcionales según API) */
 export interface InstitutionResponse {
-    institution: {
-      cover: string;
-      address: string;
-      phone1: string;
-    };
-  }
+  institution: {
+    cover?: string;
+    address?: string;
+    phone1?: string;
+    banner?: string;
+    bannerUrl?: string;
+    avatar?: string;
+    photo?: string;
+    name?: string;
+    [key: string]: unknown;
+  };
+}

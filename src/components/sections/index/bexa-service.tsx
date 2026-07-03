@@ -1,56 +1,81 @@
-import React from "react";
-import bexa6 from "../../../assets/img/bexa6.png";
-import ButtonIndex from "../../ui/button-index";
+import React from 'react'
+import imgBexa from '../../../assets/img/bexaimg.webp'
+import Radiacion from '../../../assets/img/rad.png'
+import File from '../../../assets/img/file.png'
+import Dolor from '../../../assets/img/dolor.png'
+import { ChevronRight } from 'lucide-react'
+import ButtonSecondary from '../../ui/button-secondary'
 
 const ServiciosBexa: React.FC = () => {
-    return (
-        <main
-            className="mx-auto py-6 px-8 flex items-center justify-center min-h-screen"
-            style={{
-                backgroundImage:
-                    "url('https://medicall24.com.co/wp-content/uploads/2025/01/bexa5.png')",
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-            }}
-        >
-            {/* Contenedor izquierdo fantasma */}
-            <div className="flex-1 xs:hidden sm:hidden md:hidden lg:block xl:block" />
+  const FEATURES = [
+    { nombre: 'Sin dolor', imagen: Dolor },
+    { nombre: 'Sin radiación', imagen: Radiacion },
+    { nombre: 'Resultado inmediato', imagen: File },
+  ]
+  return (
+    <section
+      id="especialidades"
+      className="flex flex-col lg:flex-row xl:flex-row items-center justify-center gap-12 lg:gap-16 xl:gap-16 px-8 py-16 bg-white"
+    >
+      {/* Columna izquierda */}
+      <div className="flex flex-col max-w-2xl w-full">
+        <div className="w-full h-auto">
+          <img
+            src={imgBexa}
+            alt="Médico en videollamada"
+            className="w-full h-auto object-cover rounded-4xl"
+          />
+        </div>
+      </div>
 
-            {/* Contenedor principal */}
-            <div className="flex-1 flex justify-end lg:justify-center xl:justify-center mr-8 lg:mr-0 xl:mr-0 sm:mr-0 xs:mr-0 md:justify-center">
-                <div className="bg-white/90 p-8 rounded-xl max-w-xl w-full flex flex-col items-center space-y-6 lg:translate-x-0 xl:translate-x-0 md:translate-x-0 sm:translate-x-0 xs:translate-x-0 lg:max-w-xl xl:max-w-xl md:max-w-lg">
-                    {/* Títulos */}
-                    <div className="text-center">
-                        <p className="text-5xl sm:text-4xl xs:text-4xl text-gray-500">
-                            Examen{" "}
-                            <span className="text-6xl sm:text-5xl xs:text-5xl font-bold">
-                                Bexa
-                            </span>
-                        </p>
-                        <p className="text-3xl sm:text-xl xs:text-xl text-gray-600 mt-6 mb-4">
-                            Para detectar masas en mama
-                        </p>
-                        <p className="text-3xl sm:text-xl xs:text-xl font-semibold text-gray-600">
-                            Sin dolor, sin radiación, con resultados inmediatos
-                        </p>
-                    </div>
+      {/* Columna derecha */}
+      <div className="flex flex-col max-w-xl w-full">
+        <h2 className="text-4xl sm:text-5xl lg:text-5xl xl:text-5xl font-light text-gray-800 mb-4 leading-tight">
+          Hazte el examen de mama con Bexa
+        </h2>
+        <p className="text-gray-800 text-lg sm:text-xl lg:text-lg xl:text-lg mb-8">
+          El examen Bexa es el método de tamizaje más preciso que existe para
+          detectar masas sólidas en las mamas. Es un suave rastreo en los senos
+          realizado por un médico experto, quien interpreta las imágenes para
+          identificar las lesiones.
+        </p>
 
-                    {/* Imagen */}
-                    <div className="w-full sm:w-72 xs:w-72 h-auto overflow-hidden rounded-lg">
-                        <img
-                            src={bexa6}
-                            alt="Examen Bexa"
-                            className="w-5/6 h-full object-cover"
-                            style={{ objectPosition: "center top" }}
-                        />
-                    </div>
-
-                    {/* Botón */}
-                    <ButtonIndex link="/Examen-Bexa" label="Más información" />
-                </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3">
+          {FEATURES.map((feature) => (
+            <div
+              key={feature.nombre}
+              className="flex items-center gap-2 text-gray-800 px-2 py-2 font-medium text-left flex-col"
+            >
+              <img
+                src={feature.imagen}
+                alt={feature.nombre}
+                className="w-auto h-24"
+              />
+              {feature.nombre}
             </div>
-        </main>
-    );
-};
+          ))}
+        </div>
+        <div className="ml-4 mt-8 mb-8">
+          <div className="flex items-center gap-2 text-gray-800 px-2 py-2 font-medium text-left flex-row">
+            {' '}
+            <ChevronRight className="w-8 h-8 text-primary" />{' '}
+            <span>Apto para mujeres de cualquier edad</span>
+          </div>
+          <div className="flex items-center gap-2 text-gray-800 px-2 py-2 font-medium text-left flex-row">
+            {' '}
+            <ChevronRight className="w-8 h-8 text-primary" />{' '}
+            <span>Indicado en embarazadas y lactantes</span>
+          </div>
+        </div>
 
-export default ServiciosBexa;
+        <ButtonSecondary
+          link="/Examen-bexa"
+          text="Quiero hacerme el examen"
+          color="bg-primary"
+        />
+      </div>
+    </section>
+  )
+}
+
+export default ServiciosBexa

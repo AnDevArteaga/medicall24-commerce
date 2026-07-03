@@ -1,7 +1,5 @@
 @import "tailwindcss";
 @config "../tailwind.config.ts";
-@import "slick-carousel/slick/slick.css";
-@import "slick-carousel/slick/slick-theme.css";
 
 
 
@@ -36,4 +34,18 @@
  
  .animate-fade-slide-in {
    animation: fade-slide-in 0.2s ease-out forwards;
+ }
+
+ @keyframes route-progress {
+   from {
+     transform: scaleX(0);
+   }
+   to {
+     transform: scaleX(1);
+   }
+ }
+
+ /* Imágenes: evita layout shift y decodificación bloqueante por defecto */
+ img {
+   content-visibility: auto;
  }

@@ -2,8 +2,11 @@ import axios from "axios";
 import { Ally, InstitutionResponse } from "../../interfaces/allies-supabase.interface";
 import { apiAzure } from "../config/apis";
 
+export const DEFAULT_INSTITUTION_COVER =
+    "https://medicall24.com.co/wp-content/uploads/2023/12/1_2_1.png";
+
 export const listInstitutionsById = async (items: Ally[]): Promise<Ally[]> => {
-    const DEFAULT_COVER = "https://medicall24.com.co/wp-content/uploads/2023/12/1_2_1.png";
+    const DEFAULT_COVER = DEFAULT_INSTITUTION_COVER;
 
     try {
         const responses = await Promise.allSettled(
@@ -45,7 +48,7 @@ export const listInstitutionsById = async (items: Ally[]): Promise<Ally[]> => {
         console.error("Error loading institutions:", error);
         return items.map((item) => ({
             ...item,
-            cover: "/assets/default-cover.png",
+            cover: DEFAULT_INSTITUTION_COVER,
         }));
     }
 };

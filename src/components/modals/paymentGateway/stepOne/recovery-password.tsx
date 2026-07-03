@@ -12,12 +12,15 @@ interface RecoveryPasswordModalProps {
   email: string
   typeId: string
   identification: string
+  /** Si se define, se ejecuta en lugar del flujo de compra (pasarela) al terminar */
+  onSuccessContinue?: () => void
 }
 
 const RecoveryPasswordModal: React.FC<RecoveryPasswordModalProps> = ({
   email,
   typeId,
   identification,
+  onSuccessContinue,
 }) => {
   const { closeModal, openModal } = useModal()
   const { handleNext } = usePurchaseContext()
@@ -50,6 +53,10 @@ const RecoveryPasswordModal: React.FC<RecoveryPasswordModalProps> = ({
     reset()
     closeModal('recoveryPassword')
     closeModal('userRegistered')
+    if (onSuccessContinue) {
+      onSuccessContinue()
+      return
+    }
     handleNext()
     openModal('selectAllieBexa')
   }

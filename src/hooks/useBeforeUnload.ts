@@ -1,9 +1,18 @@
 import { useState, useEffect } from 'react';
 
+const BYPASS_BEFORE_UNLOAD_KEY = 'bypass_beforeunload_once';
+
 export const useBeforeUnload = () => {
   const [isDirty, setIsDirty] = useState(false);
 
   const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    // Permite una salida intencional (ej. botón Cancelar de la pasarela)
+    const bypass = window.sessionStorage.getItem(BYPASS_BEFORE_UNLOAD_KEY);
+    if (bypass === '1') {
+      window.sessionStorage.removeItem(BYPASS_BEFORE_UNLOAD_KEY);
+      return;
+    }
+
     if (isDirty) {
       e.preventDefault();
       

@@ -265,7 +265,6 @@ export const createConsultation = async (transactionId: string, idCompra?: numbe
     if (response.status === 201 || response.status === 200) {
       console.log("Consulta creada correctamente");
     }
-    // Retornar tanto el status como los datos completos
     return {
       status: response.status,
       data: response.data

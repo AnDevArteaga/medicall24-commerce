@@ -6,7 +6,7 @@ import Title from "./title";
 import ButtonBuy from "../../ui/button-buy";
 import bexa from "../../../assets/img/Logobexa.png";
 import videoBexa from "../../../assets/videos/videoDispBexa2.mp4";
-import poster from "../../../assets/img/playBexa.png";
+import poster from "../../../assets/img/playBexa.webp";
 import { useModal } from "../../../contexts/modals";
 import { termBexaContent } from "../../modals/term&cond/bexa/content-terms";
 import { Ally } from "../../../interfaces/allies-supabase.interface";

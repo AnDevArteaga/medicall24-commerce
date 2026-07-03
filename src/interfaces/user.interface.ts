@@ -9,6 +9,11 @@ export interface User {
         email: string;
         password: string;
         confirmPassword: string;
+        /** Fecha de nacimiento (UI DD/MM/AAAA) */
+        birthDate?: string;
+        phone?: string;
+        /** Género biológico para el registro de consulta gratuita */
+        gender?: 'F' | 'M';
     };
     epsId: null;
     regimenId: null;

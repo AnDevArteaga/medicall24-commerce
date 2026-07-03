@@ -40,8 +40,8 @@ export const useSelectAllie = () => {
             );
         }
         return {
-            direccion: data.institution.address,
-            telefono: data.institution.phone1,
+            direccion: data.institution.address ?? "",
+            telefono: data.institution.phone1 ?? "",
         };
     };
     const loadDepartments = async () => {

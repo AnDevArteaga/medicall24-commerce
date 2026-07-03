@@ -3,7 +3,12 @@ import { User } from '../interfaces/user.interface';
 import { PurchaseData, PaymentMethodData, CreditData, CustomPaymentData, detailsPayment, registerPurchase } from '../interfaces/checkout.interfase';
 import { Validations } from '../interfaces/validations.interface';
 import { buildFullName } from '../utils/forms';
-import Slider from "react-slick";
+/** Solo tipo: evita meter react-slick en el bundle inicial */
+type SlickSlider = {
+  slickNext: () => void
+  slickPrev: () => void
+  slickGoTo: (slide: number) => void
+}
 import { TypeId } from '../interfaces/types-id';
 import { Product, CodeXProduct, queryParamsProduct } from '../interfaces/product.interface';
 import { OrderStatus } from '../types/status';
@@ -26,7 +31,7 @@ interface PurchaseContextProps {
   setValidations: React.Dispatch<React.SetStateAction<Validations>>;
   handleNext: () => void;
   handlePrevious: () => void;
-  sliderRef: React.RefObject<Slider | null>;
+  sliderRef: React.RefObject<SlickSlider | null>;
   setResizeCallback: (fn: () => void) => void;
   triggerResize: () => void;
   statusRegister: string | null;
@@ -107,7 +112,7 @@ export const PurchaseProvider = ({ children }:{ children: ReactNode }) => {
     phoneNumber: null,
     meddipayAuthorizationCode: null,
   });
-  const [registerData, setRegisterData] = useState<User>({ user: { identification: "", typeId: "", name1: "", name2: "", lastName1: "", lastName2: "", email: "", password: "", confirmPassword: "" }, epsId: null, regimenId: null });
+  const [registerData, setRegisterData] = useState<User>({ user: { identification: "", typeId: "", name1: "", name2: "", lastName1: "", lastName2: "", email: "", password: "", confirmPassword: "", birthDate: "", phone: "" }, epsId: null, regimenId: null });
   const [purchaseData, setPurchaseData] = useState<PurchaseData>({ identification: "", typeId: "", names: "", lastNames: "", email: "", address: "", phone: "", departament: "", city: "" });
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodData>({ card: { number: "", cvc: "", expMonth: "", expYear: "", cardHolder: "" }, financialInstitutionCode: "0", installments: "0", paymentDescription: "", phoneNumber: "", type: "", userLegalId: "", userLegalIdType: "", userType: "" });
   const [creditData, setCreditData] = useState<CreditData>({ meddipayAuthorizationCode: "" });
@@ -143,7 +148,7 @@ export const PurchaseProvider = ({ children }:{ children: ReactNode }) => {
 
 
       // Referencia del slider para poder controlarlo directamente
-      const sliderRef = useRef<Slider>(null);
+      const sliderRef = useRef<SlickSlider | null>(null);
       const resizeCallbackRef = useRef<() => void>(() => {});
 
 
@@ -178,6 +183,7 @@ export const PurchaseProvider = ({ children }:{ children: ReactNode }) => {
           names: fullName,
           lastNames: fullLastName,
           email: registerData.user.email,
+          phone: registerData.user.phone?.trim() || prev.phone,
         }));
       }, [registerData]);
 

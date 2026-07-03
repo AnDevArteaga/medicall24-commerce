@@ -1,5 +1,5 @@
 import React from "react";
-import paciente from "../../../assets/img/paciente2.jpg";
+import paciente from "../../../assets/img/paciente2.webp";
 import { Minus } from "lucide-react";
 import ButtonSecondary from "../../ui/button-secondary";
 

@@ -1,62 +1,42 @@
-import React from "react";
-import { ArrowDownFromLine } from "lucide-react";
-import DropdownMenu from "../ui/dropdown";
+import React from 'react'
+import { useLocation } from 'react-router-dom'
+import PrefetchLink from '../ui/prefetch-link'
 
-interface Props {
-  menuItemsPersonas: any[];
-  menuItemsPrestadores: any[];
-  isCountryVisible: boolean;
-  setIsCountryVisible: (visible: boolean) => void;
+interface NavItem {
+  href: string
+  label: string
 }
 
-const DesktopNav: React.FC<Props> = ({
-  menuItemsPersonas,
-  menuItemsPrestadores,
-  isCountryVisible,
-  setIsCountryVisible,
-}) => {
-  return (
-    <div className="hidden lg:flex xl:flex items-center gap-14 text-md font-medium text-gray-600 flex-1 justify-center">
-      <ul
-        className={`$${
-          isCountryVisible ? "ml-16 transition-all" : "ml-0 transition-all"
-        } flex items-center gap-14`}
-      >
-        <DropdownMenu label="Personas" menuItems={menuItemsPersonas} />
-        <DropdownMenu label="Prestadores de Salud" menuItems={menuItemsPrestadores} />
-        {/* <li>
-          <a
-            href="https://medicall24.com.co/entidades/"
-            className="transform transition duration-200 hover:scale-105 flex hover:font-semibold hover:text-primary"
-            target="_blank"
-          >
-            Entidades de Salud
-          </a>
-        </li> */}
-        {/* <li>
-          <a
-            href="/empresas"
-            className="transform transition duration-200 hover:scale-105 flex hover:font-semibold hover:text-primary"
-            target="_blank"
-          >
-            Empresas
-          </a>
-        </li> */}
-        <li
-          className={`${
-            isCountryVisible
-              ? "opacity-0 cursor-auto transition-all duration-500 ease-in-out"
-              : "opacity-100 transition-all duration-500 ease-in-out cursor-pointer"
-          }`}
-        >
-          <ArrowDownFromLine
-            className="w-6 h-6 text-primary transform transition duration-200 hover:scale-105 flex hover:font-semibold"
-            onClick={() => setIsCountryVisible(true)}
-          />
-        </li>
-      </ul>
-    </div>
-  );
-};
+interface Props {
+  navItems: NavItem[]
+}
 
-export default DesktopNav;
+const DesktopNav: React.FC<Props> = ({ navItems }) => {
+  const location = useLocation()
+
+  const isActive = (href: string) => {
+    if (href === '/') return location.pathname === '/'
+    return location.pathname.startsWith(href)
+  }
+
+  return (
+    <ul className="flex items-center gap-8 lg:gap-10 xl:gap-12 text-sm lg:text-base font-medium text-gray-600">
+      {navItems.map((item) => (
+        <li key={item.href}>
+          <PrefetchLink
+            to={item.href}
+            className={`transition-colors text-lg lg:text-base xl:text-base hover:text-primary ${
+              isActive(item.href)
+                ? 'text-primary font-semibold'
+                : 'text-gray-600'
+            }`}
+          >
+            {item.label}
+          </PrefetchLink>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+export default DesktopNav

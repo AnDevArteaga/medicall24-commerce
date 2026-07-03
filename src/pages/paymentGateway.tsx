@@ -26,15 +26,15 @@ import { registerGestionUsuarioCredito } from "../services/supabase/manage-user-
 import { toast } from "react-hot-toast";
 import Loader from "../components/ui/loader";
 
-import p1 from "../assets/img/p1.png";
-import p2 from "../assets/img/p2.png";
+import p1 from "../assets/img/p1.webp";
+import p2 from "../assets/img/p2.webp";
 import p3 from "../assets/img/p3.jpeg";
 
 
 const PaymentGateway: React.FC = () => {
     const { isModalOpen, closeModal, getModalProps, openModal } = useModal();
     const termCondProps = getModalProps("termCond");
-    const { product, purchaseData, consultationResult, status } = usePurchaseContext();
+    const { product, purchaseData, consultationResult, status, currentStep } = usePurchaseContext();
     const setIsDirty = useBeforeUnload();
     const [loadingValidate, setLoadingValidate] = useState(false);
     const [hasShownConsultationModal, setHasShownConsultationModal] = useState(false);
@@ -206,7 +206,10 @@ const PaymentGateway: React.FC = () => {
             {/* Solo mostramos el flujo principal cuando no hay errores y el producto está disponible */}
             {shouldShowContent && (
                 <>
-                    <main onChange={() => setIsDirty(true)}>
+                    <main onChange={() => {
+                        // Evitar activar beforeunload demasiado pronto por cambios menores de UI.
+                        if (currentStep >= 1) setIsDirty(true);
+                    }}>
                         <Gateway />
                     </main>
 

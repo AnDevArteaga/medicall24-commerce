@@ -1,6 +1,6 @@
 import React from "react";
-import Nequi1 from "../../../assets/img/Nequi1.png";
-import Nequi2 from "../../../assets/img/Nequi2.png";
+import Nequi1 from "../../../assets/img/Nequi1.webp";
+import Nequi2 from "../../../assets/img/Nequi2.webp";
 
 const TutorialNequi: React.FC = () => {
     return (

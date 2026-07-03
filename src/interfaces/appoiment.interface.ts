@@ -9,7 +9,12 @@ export interface Institution {
     id_municipio: number;
     id_aliado: number;
     id_gestor: number;
+    /** Imagen circular (aliados / modal sede); suele venir del cover de la API */
     cover?: string;
+    /** Portada ancha en página de consulta gratuita */
+    banner?: string;
+    /** Avatar del prestador si la API lo expone distinto al cover */
+    avatar?: string;
 }
 
 export interface Sede {

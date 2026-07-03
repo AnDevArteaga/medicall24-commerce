@@ -73,9 +73,9 @@ export const useSelectAllieExtended = () => {
       throw new Error("No se pudo obtener la información de la institución");
     }
     return {
-      direccion: data.institution.address,
-      telefono: data.institution.phone1,
-      cover: data.institution.cover
+      direccion: data.institution.address ?? "",
+      telefono: data.institution.phone1 ?? "",
+      cover: data.institution.cover ?? "",
     };
   };
 

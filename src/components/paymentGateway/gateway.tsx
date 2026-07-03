@@ -4,6 +4,8 @@ import ButtonForm from '../ui/button-forms'
 import { usePurchaseContext } from '../../contexts/checkout'
 import useNavigationButton from '../../hooks/useButtonNavigationGateway'
 import Slider from 'react-slick'
+import 'slick-carousel/slick/slick.css'
+import 'slick-carousel/slick/slick-theme.css'
 // import { useNavigate } from 'react-router-dom'
 
 const StepOne = lazy(() => import('./step-one'))
@@ -177,7 +179,7 @@ const PaginacionSlider: React.FC = () => {
           // paddingBottom: '100px'
         }}
       >
-        <Slider {...settings} ref={sliderRef}>
+        <Slider {...settings} ref={sliderRef as React.Ref<Slider>}>
           <div>
             <StepOne />
           </div>

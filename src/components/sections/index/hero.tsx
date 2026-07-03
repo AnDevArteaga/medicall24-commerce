@@ -1,94 +1,106 @@
 import React from 'react'
-import { Video } from 'lucide-react'
-import heroImage from '../../../assets/img/hero.image.png'
+import { Link } from 'react-router-dom'
+import heroImage from '../../../assets/img/hero.image.webp'
 import playStore from '../../../assets/img/Google_Play-Logo.wine.png'
 import appStore from '../../../assets/img/apple_appstore_logo_icon_168587.png'
-import bgHero from '../../../assets/img/bgHero.png'
+import bgHero from '../../../assets/img/bgHero.webp'
+import Video from '../../../assets/img/video.png'
 
 const Hero: React.FC = () => {
   return (
     <section
-      className="flex flex-col min-h-screen lg:flex-row xl:flex-row items-center justify-center gap-12 lg:gap-16 xl:gap-16 px-12 py-16 bg-gray-100"
+      className="bg-white"
       style={{
         backgroundImage: `url(${bgHero})`,
         backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        backgroundPosition: 'center left',
         backgroundRepeat: 'no-repeat',
       }}
     >
-      {/* Columna izquierda */}
-      <div className="flex flex-col max-w-xl items-center justify-center">
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-6xl font-bold text-neutral text-center leading-tight mb-4">
-          Consultas médicas virtuales
-        </h1>
-        <p className="text-xl sm:text-2xl font-medium text-primary text-center lg:text-2xl xl:text-3xl mb-8">
-          ¡La manera más fácil de encontrar atención médica!
-        </p>
+      <div className="container mx-auto flex flex-col lg:flex-row xl:flex-row items-center justify-between gap-4 lg:gap-16 px-6 sm:px-10 py-12 lg:py-20">
+        {/* Columna izquierda */}
+        <div className="flex flex-col w-full lg:w-1/2 xl:w-1/2 items-center lg:items-start xl:items-start text-center lg:text-left xl:text-left">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl text-gray-800 mb-8">
+            Consultas por Telemedicina
+          </h1>
+          <p className="text-lg sm:text-xl lg:text-2xl xl:text-3xl text-primary mb-12">
+            ¡La manera más fácil de encontrar atención médica!
+          </p>
 
-        <a
-          href="#especialidades"
-          onClick={(e) => {
-            e.preventDefault()
-            document.getElementById('especialidades')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-          }}
-          className="flex items-center gap-3 bg-secondary rounded-2xl px-6 py-2 shadow-lg hover:opacity-95 w-full max-w-md"
-        >
-          <span className="flex-shrink-0 w-20 h-20 px-2 rounded-xl overflow-hidden bg-green-500 flex items-center justify-center">
-            {' '}
-            <Video className="w-20 h-20 text-white" />
-          </span>
-          <div className="flex flex-col text-center">
-            <span className="text-white text-lg sm:text-base">
-              Ingresa aquí para agendar una consulta médica
-            </span>
-            <span className="text-white/95 text-sm font-medium">
-              ¡Recibe atención sin costo!
-            </span>
+          <Link
+            to="/prueba-gratuita-especialidades"
+            className="flex items-center sm:flex-row xl:flex-row lg:flex-row flex-col gap-2 bg-secondary rounded-4xl px-2 py-3 shadow-lg hover:opacity-95 w-full max-w-2xl transition-opacity mb-12"
+          >
+            <div className="shrink-0">
+              <img
+                src={Video}
+                alt="Video"
+                className="w-auto h-18 sm:w-auto xl:h-32"
+              />
+            </div>
+            <div className="flex flex-col text-left">
+              <span className="text-white text-xl sm:text-xl xl:text-3xl text-center sm:text-base leading-snug">
+                Ingresa aquí para iniciar tu prueba gratuita
+              </span>
+              <span className="text-white/90 text-lg sm:text-lg xl:text-xl text-center font-light sm:text-sm font-medium mt-0.5">
+                ¡Recibe una consulta médica sin costo!
+              </span>
+            </div>
+          </Link>
+          <div className="flex flex-col items-center w-full">
+            <Link
+              to="/buscar-médico"
+              className="mt-4 bg-primary text-white text-2xl sm:text-base px-8 py-3 rounded-full hover:bg-primarydark transition-colors w-full max-w-lg text-center"
+            >
+              Ver todos los médicos disponibles
+            </Link>
+
+            <p className="text-gray-500 text-md sm:text-base mt-8 max-w-xl text-center leading-relaxed">
+              Encuentra médicos virtuales y especialistas sin importar la zona
+              donde te encuentres. Instala la App MEDICALL24 y solicita tu cita.
+            </p>
           </div>
-        </a>
-      </div>
-
-      {/* Columna derecha */}
-      <div className="flex flex-col max-w-2xl">
-        <div className="rounded-4xl overflow-hidden border-4 border-primary p-1">
-          <img
-            src={heroImage}
-            alt="Consulta médica virtual"
-            className="w-full h-auto object-cover rounded-4xl"
-          />
         </div>
 
-        <p className="text-neutral text-center text-lg mt-6">
-          Descarga la <strong>App MEDICALL24</strong>
-        </p>
-        <p className="text-gray-600 text-center text-lg mb-4">Disponible en:</p>
-
-        <div className="flex items-center justify-center gap-4">
-          <div className="bg-white p-2 rounded-full shadow-xl w-56 flex items-center justify-center">
-            <a
-              href="https://apps.apple.com/co/app/medicall24/id6661032000"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <img
-                src={appStore}
-                alt="App Store"
-                className="h-10 md:h-12 w-auto scale-90"
-              />
-            </a>
+        {/* Columna derecha */}
+        <div className="flex flex-col w-full lg:w-1/2 xl:w-1/2 items-center">
+          <div className="rounded-3xl overflow-hidden shadow-xl w-full max-w-md lg:max-w-xl xl:max-w-2xl">
+            <img
+              src={heroImage}
+              alt="Consulta médica virtual"
+              className="w-full h-auto object-cover"
+            />
           </div>
-          <div className="bg-white p-2 rounded-full shadow-xl w-56">
-            <a
-              href="https://play.google.com/store/apps/details?id=com.devdvs.medicall.medicall24"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <img
-                src={playStore}
-                alt="Play Store"
-                className="h-10 md:h-12 w-auto"
-              />
-            </a>
+
+          <p className="text-gray-600 text-base mt-5 mb-3">Disponible en:</p>
+
+          <div className="flex items-center justify-center gap-4">
+            <div className="bg-white px-4 py-2 rounded-full shadow-md flex items-center justify-center">
+              <a
+                href="https://apps.apple.com/co/app/medicall24/id6661032000"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <img
+                  src={appStore}
+                  alt="App Store"
+                  className="h-8 sm:h-10 w-auto"
+                />
+              </a>
+            </div>
+            <div className="bg-white px-4 py-2 rounded-full shadow-md flex items-center justify-center">
+              <a
+                href="https://play.google.com/store/apps/details?id=com.devdvs.medicall.medicall24"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <img
+                  src={playStore}
+                  alt="Play Store"
+                  className="h-8 sm:h-10 w-auto"
+                />
+              </a>
+            </div>
           </div>
         </div>
       </div>

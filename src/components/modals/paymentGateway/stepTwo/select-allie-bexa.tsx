@@ -171,7 +171,8 @@ const SelectAllie: React.FC = () => {
   const handleClose = () => {
     reset()
     setConsentAccepted(false)
-    closeModal('selectAllieBexa')
+    // Esta navegación es intencional: evitar prompt de beforeunload en Android.
+    window.sessionStorage.setItem('bypass_beforeunload_once', '1')
     window.location.href = isFree ? '/' : '/Examen-bexa'
   }
 
